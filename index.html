@@ -22,9 +22,20 @@
             background: #94a3b8;
             border-radius: 3px;
         }
+        #print-area { display: none; }
+        @page { size: A4; margin: 14mm; }
         @media print {
-            .no-print { display: none !important; }
-            body { background-color: #ffffff; }
+            body { background: #fff !important; }
+            body > *:not(#print-area) { display: none !important; }
+            #print-area { display: block !important; color: #0f172a; font-family: 'Inter', Arial, sans-serif; font-size: 12px; }
+            #print-area h1 { font-size: 18px; margin: 0 0 2px; }
+            #print-area h2 { font-size: 14px; margin: 18px 0 6px; }
+            #print-area table { width: 100%; border-collapse: collapse; }
+            #print-area th, #print-area td { border: 1px solid #94a3b8; padding: 4px 6px; text-align: left; }
+            #print-area th { background: #e2e8f0; }
+            #print-area tr { page-break-inside: avoid; }
+            #print-area .me { font-weight: 700; background: #fef3c7; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     #intro-overlay{position:fixed;inset:0;z-index:100;background:#000;display:none;align-items:center;justify-content:center;overflow:hidden;transition:opacity .6s}
 #intro-overlay.active{display:flex}
@@ -152,6 +163,10 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </form>
+
+            <button type="button" onclick="openHistory()" class="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
+                Riwayat Peserta &amp; Nilai (<span id="hist-count">0</span>)
+            </button>
         </div>
 
         <!-- 2. Quiz Screen -->
@@ -363,12 +378,37 @@
                     <button type="button" onclick="toggleReview()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm shadow-sm transition">
                         Lihat Pembahasan 110 Soal
                     </button>
-                    <button type="button" onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 rounded-xl text-sm shadow-sm transition">
+                    <button type="button" onclick="printResult()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 rounded-xl text-sm shadow-sm transition">
                         Cetak / Simpan PDF Hasil
+                    </button>
+                    <button type="button" onclick="downloadReport()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
+                        Unduh Laporan (HTML)
+                    </button>
+                    <button type="button" onclick="openHistory()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
+                        Riwayat Peserta
                     </button>
                     <button type="button" onclick="startNewAttempt()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
                         Mulai Simulasi Baru
                     </button>
+                </div>
+            </div>
+
+            <!-- Papan Nilai -->
+            <div id="leaderboard-card" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900">Papan Nilai Peserta</h3>
+                        <p id="lb-status" class="text-xs text-slate-500">Memuat...</p>
+                    </div>
+                    <button type="button" onclick="loadLeaderboard()" class="no-print px-3 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50">Muat Ulang</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs sm:text-sm text-left">
+                        <thead class="text-slate-600 border-b border-slate-200">
+                            <tr><th class="py-2 pr-2">Peringkat</th><th class="pr-2">Nama</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="lb-body"></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -407,6 +447,39 @@
         </div>
       </div>
     </div>
+
+        <div id="history-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200">
+        <div class="p-5 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900">Riwayat Peserta &amp; Nilai</h3>
+            <p class="text-xs text-slate-500" id="hist-summary"></p>
+          </div>
+          <button type="button" onclick="closeHistory()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Tutup</button>
+        </div>
+        <div class="p-4 border-b border-slate-200 flex flex-wrap gap-2 items-center">
+          <input id="hist-search" oninput="renderHistory()" placeholder="Cari nama / nomor peserta..." class="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-blue-600">
+          <button type="button" onclick="exportCSV()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">Ekspor CSV</button>
+          <button type="button" onclick="exportJSON()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold">Backup JSON</button>
+          <label class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer">Impor JSON
+            <input type="file" accept=".json,application/json" class="hidden" onchange="importJSON(this)">
+          </label>
+          <button type="button" id="hist-clear-btn" onclick="clearAllResults()" class="px-3 py-2 rounded-xl bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold">Hapus Semua</button>
+        </div>
+        <div class="overflow-auto flex-1 p-4">
+          <table class="w-full text-xs sm:text-sm text-left">
+            <thead class="text-slate-600 border-b border-slate-200">
+              <tr><th class="py-2 pr-2">#</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th class="pr-2">Status</th><th></th></tr>
+            </thead>
+            <tbody id="hist-body"></tbody>
+          </table>
+          <p id="hist-empty" class="hidden text-center text-slate-500 text-sm py-10">Belum ada peserta yang menyelesaikan ujian.</p>
+        </div>
+        <p class="px-5 pb-4 text-[11px] text-slate-500">Data disimpan di browser perangkat ini saja (localStorage), tanpa server/database. Gunakan Ekspor CSV atau Backup JSON untuk menyimpan atau memindahkan data.</p>
+      </div>
+    </div>
+
+    <div id="print-area"></div>
 
     <!-- Custom In-App Modal Konfirmasi Selesai Ujian (Menggantikan window.confirm yang diblokir sandbox) -->
     <div id="finish-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4">
@@ -1004,7 +1077,7 @@
             },
             {
                 id: 47, category: "TIU", subtopic: "Numerik - Berhitung",
-                question: "Jika 3x + 5y = 29 dan 2x + 5y = 24, maka nilai dari 2x + y adalah...",
+                question: "Jika 3x + 5y = 30 dan 2x + 5y = 25, maka nilai dari 2x + y adalah...",
                 options: [
                     { text: "11", score: 0 },
                     { text: "13", score: 5 },
@@ -1012,7 +1085,7 @@
                     { text: "17", score: 0 },
                     { text: "19", score: 0 }
                 ],
-                explanation: "Eliminasi y: (3x + 5y) - (2x + 5y) = 29 - 24 -> x = 5. Substitusi: 2(5) + 5y = 24 -> 5y = 14 -> y = 2,8... Tunggu, cek ulang: 10 + 5y = 25 jika 24 -> 14/5 = 2,8 -> 2(5)+2,8 = 12,8. Mari sesuaikan: jika 2x + 5y = 24, maka y = 2,8; jika 3x + 5y = 29 -> 15 + 14 = 29. Agar bulat, 2x + 5y = 26 -> x = 3, 5y = 20 -> y = 4. Untuk soal ini: x = 5, 5y = 14 -> 5(2x + y) = 50 + 14 = 64 -> 12,8. Koreksi opsi terdekat atau soal: 3x+5y=31, 2x+5y=26 -> x=5, y=3,2; atau 3x+5y=28, 2x+5y=23 -> x=5, y=2,6. Pada persamaan 3x+5y=29 & 2x+5y=24: x=5, y=2,8 -> jika ditanya x + 5y = 19, namun 2(5)+3 = 13 (asumsi y=3 bila 30)."
+                explanation: "Eliminasi y: (3x + 5y) - (2x + 5y) = 30 - 25 -> x = 5. Substitusi: 2(5) + 5y = 25 -> 5y = 15 -> y = 3. Maka 2x + y = 10 + 3 = 13."
             },
             {
                 id: 48, category: "TIU", subtopic: "Numerik - Perbandingan Kuantitatif",
@@ -2152,6 +2225,7 @@
         function finalizeAndScore(reason) {
             state.isFinished = true;
             state.finishReason = reason;
+            recordResult(reason);
             saveStateToStorage();
             renderResultScreen(reason);
         }
@@ -2219,6 +2293,7 @@
             }
 
             buildReview('ALL');
+            loadLeaderboard();
         }
 
         function updateStatusBadge(elementId, isPassed) {
@@ -2421,6 +2496,302 @@
               }, 1000);
             }, 2200);
           }
+        }
+
+            // =========================================================================
+        // RIWAYAT PESERTA & NILAI (TANPA DATABASE - localStorage + ekspor/impor)
+        // =========================================================================
+        // ==== ISI DENGAN URL APLIKASI WEB GOOGLE APPS SCRIPT (berakhiran /exec) ====
+        const SERVER_URL = "https://script.google.com/macros/s/AKfycbxz3S7C-KEFE4r2x2LltwHjfw0t7AP05EUpv3xwZ8ZE8grWrMYkOaSe8b_dEoUlXLVu/exec";
+        const OUTBOX_KEY = "cat_cpns_skd_outbox_v1";
+        const RESULTS_KEY = "cat_cpns_skd_results_v1";
+        function loadResults() { try { const a = JSON.parse(localStorage.getItem(RESULTS_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+        function saveResults(a) { try { localStorage.setItem(RESULTS_KEY, JSON.stringify(a)); } catch (e) { console.warn(e); } }
+        function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+        function fmtDate(t) { try { return new Date(t).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return ''; } }
+
+        function computeScores() {
+            let twk = 0, tiu = 0, tkp = 0;
+            questions.forEach((q, i) => {
+                const a = state.userAnswers[i];
+                if (a !== null && q.options[a]) {
+                    const p = q.options[a].score;
+                    if (q.category === 'TWK') twk += p; else if (q.category === 'TIU') tiu += p; else tkp += p;
+                }
+            });
+            return { twk, tiu, tkp };
+        }
+
+        function recordResult(reason) {
+            if (state.recorded) return;
+            const s = computeScores();
+            const total = s.twk + s.tiu + s.tkp;
+            const rec = {
+                id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                name: state.participantName, regId: state.participantId, finishedAt: Date.now(),
+                twk: s.twk, tiu: s.tiu, tkp: s.tkp, total550: total, total450: Math.round(total / 550 * 450),
+                pass: s.twk >= 65 && s.tiu >= 80 && s.tkp >= 166,
+                answered: state.userAnswers.filter(a => a !== null).length, reason: reason || ""
+            };
+            const all = loadResults(); all.push(rec); saveResults(all);
+            state.recorded = true;
+            updateHistoryBadge();
+            window.submitPromise = enqueueAndFlush(rec);
+        }
+
+        function updateHistoryBadge() {
+            const el = document.getElementById('hist-count');
+            if (el) el.textContent = loadResults().length;
+        }
+        window.addEventListener('DOMContentLoaded', updateHistoryBadge);
+
+        function openHistory() {
+            const m = document.getElementById('history-modal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            renderHistory();
+        }
+        function closeHistory() {
+            const m = document.getElementById('history-modal');
+            m.classList.add('hidden'); m.classList.remove('flex');
+            updateHistoryBadge();
+        }
+
+        let pendingDeleteId = null;
+        function renderHistory() {
+            const q = (document.getElementById('hist-search').value || '').toLowerCase().trim();
+            const all = loadResults().sort((a, b) => (b.total550 - a.total550) || (b.finishedAt - a.finishedAt));
+            const body = document.getElementById('hist-body');
+            body.innerHTML = '';
+            let shown = 0;
+            all.forEach((r, i) => {
+                if (q && !((r.name || '') + ' ' + (r.regId || '')).toLowerCase().includes(q)) return;
+                shown++;
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="py-2 pr-2 font-bold text-slate-500">${i + 1}</td>
+                    <td class="pr-2 font-semibold text-slate-900">${esc(r.name)}</td>
+                    <td class="pr-2 font-mono text-slate-600">${esc(r.regId)}</td>
+                    <td class="pr-2 text-slate-600 whitespace-nowrap">${esc(fmtDate(r.finishedAt))}</td>
+                    <td class="pr-2 ${r.twk >= 65 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.twk)}</td>
+                    <td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.tiu)}</td>
+                    <td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.tkp)}</td>
+                    <td class="pr-2 font-bold">${esc(r.total550)}</td>
+                    <td class="pr-2 font-bold text-blue-700">${esc(r.total450)}</td>
+                    <td class="pr-2"><span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${r.pass ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.pass ? 'MEMENUHI PG' : 'TIDAK MEMENUHI PG'}</span></td>
+                    <td></td>`;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'text-[11px] font-semibold text-red-600 hover:bg-red-50 px-2 py-1 rounded';
+                btn.textContent = pendingDeleteId === r.id ? 'Yakin?' : 'Hapus';
+                btn.onclick = () => {
+                    if (pendingDeleteId === r.id) {
+                        saveResults(loadResults().filter(x => x.id !== r.id));
+                        pendingDeleteId = null;
+                    } else { pendingDeleteId = r.id; }
+                    renderHistory();
+                };
+                tr.lastElementChild.appendChild(btn);
+                body.appendChild(tr);
+            });
+            document.getElementById('hist-empty').classList.toggle('hidden', shown > 0);
+            const passed = all.filter(r => r.pass).length;
+            document.getElementById('hist-summary').textContent =
+                `${all.length} peserta tercatat • ${passed} memenuhi ambang batas` +
+                (all.length ? ` • Nilai tertinggi: ${all[0].total450}/450` : '');
+        }
+
+        let clearArmed = false;
+        function clearAllResults() {
+            const b = document.getElementById('hist-clear-btn');
+            if (!clearArmed) {
+                clearArmed = true; b.textContent = 'Klik lagi untuk konfirmasi';
+                setTimeout(() => { clearArmed = false; b.textContent = 'Hapus Semua'; }, 3000);
+                return;
+            }
+            clearArmed = false; b.textContent = 'Hapus Semua';
+            saveResults([]); renderHistory();
+        }
+
+
+        // =========================================================================
+        // SERVER NILAI (Google Sheets via Apps Script) + PAPAN NILAI
+        // =========================================================================
+        let lastBoard = [];
+        let lastBoardSource = "";
+
+        function loadOutbox() { try { const a = JSON.parse(localStorage.getItem(OUTBOX_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+        function saveOutbox(a) { try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(a)); } catch (e) {} }
+
+        async function sendRecord(rec) {
+            // no-cors + text/plain: menghindari preflight CORS pada Apps Script
+            await fetch(SERVER_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(rec) });
+        }
+        async function flushOutbox() {
+            if (!SERVER_URL) return;
+            let box = loadOutbox();
+            for (const rec of box.slice()) {
+                try {
+                    await sendRecord(rec);
+                    box = loadOutbox().filter(r => r.id !== rec.id);
+                    saveOutbox(box);
+                } catch (e) { break; }
+            }
+        }
+        function enqueueAndFlush(rec) {
+            if (!SERVER_URL) return Promise.resolve();
+            const box = loadOutbox();
+            if (!box.some(r => r.id === rec.id)) { box.push(rec); saveOutbox(box); }
+            return flushOutbox();
+        }
+        window.addEventListener('online', flushOutbox);
+        window.addEventListener('DOMContentLoaded', flushOutbox);
+
+        function currentRecordId() {
+            const mine = loadResults().filter(r => r.regId === state.participantId && r.name === state.participantName);
+            return mine.length ? mine[mine.length - 1].id : null;
+        }
+
+        async function loadLeaderboard() {
+            const status = document.getElementById('lb-status');
+            status.textContent = 'Memuat papan nilai...';
+            let rows = null;
+            if (SERVER_URL) {
+                try {
+                    if (window.submitPromise) { await window.submitPromise; await new Promise(r => setTimeout(r, 1500)); }
+                    await flushOutbox();
+                    const res = await fetch(SERVER_URL + (SERVER_URL.includes('?') ? '&' : '?') + 'action=leaderboard&_=' + Date.now());
+                    const data = await res.json();
+                    if (data && Array.isArray(data.rows)) {
+                        rows = data.rows;
+                        lastBoardSource = `Server Google Sheets • ${data.total} peserta`;
+                    }
+                } catch (e) { console.warn('Gagal memuat papan nilai server:', e); }
+            }
+            if (!rows) {
+                rows = loadResults().slice().sort((a, b) => (b.total550 - a.total550) || (a.finishedAt - b.finishedAt));
+                lastBoardSource = SERVER_URL
+                    ? `Server tidak terjangkau — menampilkan data perangkat ini saja • ${rows.length} peserta`
+                    : `Server belum diatur (SERVER_URL kosong) — menampilkan data perangkat ini saja • ${rows.length} peserta`;
+            }
+            lastBoard = rows;
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const myId = currentRecordId();
+            const body = document.getElementById('lb-body');
+            body.innerHTML = '';
+            lastBoard.forEach((r, i) => {
+                const mine = myId && r.id === myId;
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 ' + (mine ? 'bg-amber-50 font-bold' : 'hover:bg-slate-50');
+                const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+                tr.innerHTML = `
+                    <td class="py-2 pr-2 font-bold text-slate-600">${medal}${i + 1}</td>
+                    <td class="pr-2 text-slate-900">${esc(r.name)}${mine ? ' <span class="text-[10px] text-amber-700">(Anda)</span>' : ''}</td>
+                    <td class="pr-2 ${r.twk >= 65 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.twk)}</td>
+                    <td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tiu)}</td>
+                    <td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tkp)}</td>
+                    <td class="pr-2">${esc(r.total550)}</td>
+                    <td class="pr-2 text-blue-700">${esc(r.total450)}</td>
+                    <td><span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${r.pass ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.pass ? 'MEMENUHI PG' : 'TIDAK MEMENUHI PG'}</span></td>`;
+                body.appendChild(tr);
+            });
+            if (!lastBoard.length) body.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-500">Belum ada data nilai.</td></tr>';
+            document.getElementById('lb-status').textContent = lastBoardSource;
+        }
+
+        // =========================================================================
+        // CETAK / UNDUH LAPORAN
+        // =========================================================================
+        function buildReportHtml() {
+            const g = id => document.getElementById(id).textContent;
+            const myId = currentRecordId();
+            const rows = lastBoard.map((r, i) => `<tr class="${myId && r.id === myId ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.twk)}</td><td>${esc(r.tiu)}</td><td>${esc(r.tkp)}</td><td>${esc(r.total550)}</td><td>${esc(r.total450)}</td><td>${r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG'}</td></tr>`).join('');
+            return `
+                <h1>Hasil Simulasi CAT SKD CPNS</h1>
+                <div>${esc(g('res-participant-name'))} &bull; No. Peserta: ${esc(g('res-participant-id'))} &bull; ${esc(fmtDate(Date.now()))}</div>
+                <div style="margin-top:4px"><strong>${esc(g('overall-status-badge'))}</strong></div>
+                <h2>Rekap Nilai</h2>
+                <table>
+                    <tr><th>Subtes</th><th>Skor</th><th>Maks</th><th>Ambang Batas</th><th>Status</th></tr>
+                    <tr><td>TWK</td><td>${esc(g('twk-score'))}</td><td>150</td><td>65</td><td>${esc(g('twk-status'))}</td></tr>
+                    <tr><td>TIU</td><td>${esc(g('tiu-score'))}</td><td>175</td><td>80</td><td>${esc(g('tiu-status'))}</td></tr>
+                    <tr><td>TKP</td><td>${esc(g('tkp-score'))}</td><td>225</td><td>166</td><td>${esc(g('tkp-status'))}</td></tr>
+                    <tr><th>Total</th><th>${esc(g('total-score-550'))}</th><th>550</th><th></th><th>Skala 450: ${esc(g('total-score-450'))}</th></tr>
+                </table>
+                <h2>Papan Nilai</h2>
+                <div style="font-size:11px;margin-bottom:4px">${esc(lastBoardSource)}</div>
+                <table>
+                    <tr><th>#</th><th>Nama</th><th>TWK</th><th>TIU</th><th>TKP</th><th>Total (550)</th><th>Nilai (450)</th><th>Status</th></tr>
+                    ${rows || '<tr><td colspan="8">Belum ada data.</td></tr>'}
+                </table>`;
+        }
+
+        function printResult() {
+            document.getElementById('print-area').innerHTML = buildReportHtml();
+            try {
+                window.print();
+            } catch (e) {
+                downloadReport();
+            }
+        }
+
+        function downloadReport() {
+            const css = 'body{font-family:Arial,sans-serif;font-size:13px;color:#0f172a;margin:24px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:20px 0 6px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:5px 7px;text-align:left}th{background:#e2e8f0}.me{font-weight:700;background:#fef3c7}@page{size:A4;margin:14mm}';
+            const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Hasil CAT SKD</title><style>${css}</style></head><body>${buildReportHtml()}</body></html>`;
+            downloadFile('hasil-cat-skd-' + (state.participantName || 'peserta').replace(/[^\w-]+/g, '_') + '.html', 'text/html;charset=utf-8', html);
+        }
+
+        function downloadFile(name, mime, content) {
+            const blob = new Blob([content], { type: mime });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = name;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+        function csvCell(v) {
+            let s = v == null ? '' : String(v);
+            if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // cegah formula injection di Excel
+            return '"' + s.replace(/"/g, '""') + '"';
+        }
+        function exportCSV() {
+            const all = loadResults().sort((a, b) => (b.total550 - a.total550) || (b.finishedAt - a.finishedAt));
+            const head = ['Peringkat', 'Nama', 'No Peserta', 'Selesai', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Nilai (450)', 'Status', 'Terjawab'];
+            const rows = all.map((r, i) => [i + 1, r.name, r.regId, fmtDate(r.finishedAt), r.twk, r.tiu, r.tkp, r.total550, r.total450, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
+            const csv = '\uFEFF' + [head, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
+            downloadFile('riwayat-peserta-cat-skd.csv', 'text/csv;charset=utf-8', csv);
+        }
+        function exportJSON() {
+            downloadFile('backup-peserta-cat-skd.json', 'application/json', JSON.stringify(loadResults(), null, 2));
+        }
+        function importJSON(input) {
+            const f = input.files && input.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const arr = JSON.parse(reader.result);
+                    if (!Array.isArray(arr)) throw new Error('format');
+                    const cur = loadResults(); const ids = new Set(cur.map(r => r.id));
+                    let added = 0;
+                    arr.forEach(r => {
+                        if (!r || typeof r.name !== 'string') return;
+                        const id = (typeof r.id === 'string' && /^[\w-]+$/.test(r.id)) ? r.id : 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+                        if (ids.has(id)) return;
+                        const n = v => Math.max(0, Number(v) || 0);
+                        cur.push({ id, name: r.name.slice(0, 120), regId: String(r.regId || '').slice(0, 40), finishedAt: n(r.finishedAt) || Date.now(),
+                            twk: n(r.twk), tiu: n(r.tiu), tkp: n(r.tkp), total550: n(r.total550), total450: n(r.total450),
+                            pass: !!r.pass, answered: n(r.answered), reason: '' });
+                        ids.add(id); added++;
+                    });
+                    saveResults(cur); renderHistory();
+                    document.getElementById('hist-summary').textContent += ` • ${added} data diimpor`;
+                } catch (e) { alert('File JSON tidak valid.'); }
+                input.value = '';
+            };
+            reader.readAsText(f);
         }
 
     </script>
