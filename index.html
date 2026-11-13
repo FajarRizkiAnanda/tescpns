@@ -26,6 +26,22 @@
             .no-print { display: none !important; }
             body { background-color: #ffffff; }
         }
+    #intro-overlay{position:fixed;inset:0;z-index:100;background:#000;display:none;align-items:center;justify-content:center;overflow:hidden;transition:opacity .6s}
+#intro-overlay.active{display:flex}
+#intro-noise{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;opacity:.4}
+#intro-slices div{position:absolute;left:0;width:100%;mix-blend-mode:screen;opacity:.7}
+#intro-scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.4) 0 2px,transparent 2px 4px);animation:scanmove .25s linear infinite}
+@keyframes scanmove{to{background-position:0 4px}}
+#intro-stage{position:relative;text-align:center;padding:1rem;color:#fff;font-family:ui-monospace,Menlo,Consolas,monospace}
+.gl{position:relative;display:inline-block;font-weight:900;letter-spacing:.06em;font-size:clamp(1.8rem,8vw,5.5rem);line-height:1.1;text-shadow:3px 0 #f0f,-3px 0 #0ff}
+.gl::before,.gl::after{content:attr(data-text);position:absolute;inset:0;overflow:hidden}
+.gl::before{color:#f0f;left:-4px;animation:glA .35s steps(2,end) infinite}
+.gl::after{color:#0ff;left:4px;animation:glB .3s steps(2,end) infinite}
+@keyframes glA{0%{clip-path:inset(5% 0 80% 0)}25%{clip-path:inset(60% 0 10% 0)}50%{clip-path:inset(30% 0 45% 0)}75%{clip-path:inset(80% 0 3% 0)}100%{clip-path:inset(15% 0 65% 0)}}
+@keyframes glB{0%{clip-path:inset(70% 0 5% 0)}25%{clip-path:inset(10% 0 75% 0)}50%{clip-path:inset(50% 0 25% 0)}75%{clip-path:inset(20% 0 60% 0)}100%{clip-path:inset(85% 0 2% 0)}}
+#intro-status{margin-top:1rem;font-size:.8rem;color:#f55;letter-spacing:.2em;min-height:1.2em}
+#intro-cd{font-size:clamp(4rem,16vw,9rem);font-weight:900;color:#fbbf24;text-shadow:0 0 25px #fbbf24;animation:cdpulse 1s ease-out infinite}
+@keyframes cdpulse{0%{transform:scale(1.5);opacity:0}30%{opacity:1}100%{transform:scale(1)}}
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
@@ -374,6 +390,23 @@
         </div>
 
     </main>
+
+        <div id="intro-overlay">
+      <canvas id="intro-noise"></canvas>
+      <div id="intro-slices"></div>
+      <div id="intro-scan"></div>
+      <div id="intro-stage">
+        <div id="intro-glitch-wrap">
+          <div id="intro-glitch-title" class="gl" data-text="SYSTEM ERROR">SYSTEM ERROR</div>
+          <div id="intro-status"></div>
+        </div>
+        <div id="intro-thanks" class="gl hidden" data-text="">Thank you to the developer FRA</div>
+        <div id="intro-cd-wrap" class="hidden" style="margin-top:2rem">
+          <div style="font-size:.8rem;letter-spacing:.3em;color:#94a3b8">UJIAN DIMULAI DALAM</div>
+          <div id="intro-cd">5</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Custom In-App Modal Konfirmasi Selesai Ujian (Menggantikan window.confirm yang diblokir sandbox) -->
     <div id="finish-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs items-center justify-center p-4">
@@ -1895,7 +1928,7 @@
 
             saveStateToStorage();
             applyParticipantHeader();
-            enterQuizMode();
+            runIntro();
         }
 
         function applyParticipantHeader() {
@@ -2268,6 +2301,128 @@
                 container.appendChild(card);
             });
         }
+            // =========================================================================
+        // INTRO GLITCH + COUNTDOWN SEBELUM UJIAN
+        // =========================================================================
+        let introRunning = false;
+        function runIntro() {
+          if (introRunning) return;
+          introRunning = true;
+          const $ = id => document.getElementById(id);
+          const ov = $('intro-overlay'), stage = $('intro-stage'), slices = $('intro-slices');
+          const canvas = $('intro-noise'), ctx = canvas.getContext('2d');
+          const gt = $('intro-glitch-title'), status = $('intro-status');
+          const thanks = $('intro-thanks'), cdWrap = $('intro-cd-wrap'), cd = $('intro-cd');
+          const W = 192, H = 108; canvas.width = W; canvas.height = H;
+          const rnd = a => a[Math.floor(Math.random() * a.length)];
+
+          let ac = null, osc = null;
+          try {
+            ac = new (window.AudioContext || window.webkitAudioContext)();
+            osc = ac.createOscillator(); const g = ac.createGain();
+            osc.type = 'sawtooth'; g.gain.value = 0.04;
+            osc.connect(g); g.connect(ac.destination); osc.start();
+          } catch (e) { ac = null; }
+          const beep = (f, d = 0.12) => {
+            if (!ac) return;
+            try {
+              const o = ac.createOscillator(), g = ac.createGain();
+              o.type = 'square'; o.frequency.value = f; g.gain.value = 0.06;
+              o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
+            } catch (e) {}
+          };
+
+          ov.style.opacity = 1; ov.style.filter = 'none'; ov.style.background = '#000';
+          ov.classList.add('active');
+          $('intro-glitch-wrap').style.display = 'block';
+          thanks.classList.add('hidden'); cdWrap.classList.add('hidden');
+
+          const chars = '█▓▒░#@$%&*!?<>/\\|01';
+          const base = 'SYSTEM ERROR';
+          const msgs = ['MENGINISIALISASI MODUL CAT...', 'ERROR 0xFRA: MEMORI RUSAK', 'SINYAL TERGANGGU',
+                        'MENCOBA PEMULIHAN DATA...', 'FATAL: SEKTOR TIDAK TERBACA', 'REBOOT PAKSA...'];
+          const colors = ['rgba(255,0,80,.8)', 'rgba(0,255,255,.8)', 'rgba(255,255,255,.9)', 'rgba(0,0,0,.95)', 'rgba(255,255,0,.7)'];
+          const DURATION = 5000, t0 = performance.now();
+
+          const glitchTick = setInterval(() => {
+            const el = performance.now() - t0;
+            const p = Math.min(el / DURATION, 1);
+
+            const id = ctx.createImageData(W, H), d = id.data;
+            for (let i = 0; i < d.length; i += 4) {
+              const v = Math.random() * 255 * (0.4 + p * 0.6);
+              d[i] = v; d[i + 1] = Math.random() > 0.7 ? v * 0.3 : v; d[i + 2] = v; d[i + 3] = 255;
+            }
+            ctx.putImageData(id, 0, 0);
+
+            slices.innerHTML = '';
+            const n = 3 + Math.floor(p * 16);
+            for (let i = 0; i < n; i++) {
+              const s = document.createElement('div');
+              s.style.cssText = `top:${Math.random() * 100}%;height:${2 + Math.random() * (8 + p * 14)}%;` +
+                `transform:translateX(${(Math.random() - 0.5) * (20 + p * 70)}%);background:${rnd(colors)}`;
+              slices.appendChild(s);
+            }
+
+            const txt = base.split('').map(c => c !== ' ' && Math.random() < 0.1 + p * 0.5 ? rnd(chars) : c).join('');
+            gt.textContent = txt; gt.setAttribute('data-text', txt);
+            if (Math.random() < 0.4) status.textContent = rnd(msgs);
+
+            const m = 8 + p * 40;
+            stage.style.transform = `translate(${(Math.random() - 0.5) * m}px,${(Math.random() - 0.5) * m}px) skewX(${(Math.random() - 0.5) * p * 25}deg) scale(${1 + Math.random() * p * 0.15})`;
+            ov.style.filter = Math.random() < 0.05 + p * 0.3
+              ? `invert(1) hue-rotate(${Math.floor(Math.random() * 360)}deg) contrast(${1.5 + p})` : 'none';
+            ov.style.background = Math.random() < 0.08 + p * 0.1 ? rnd(['#fff', '#f0f', '#0ff', '#f00']) : '#000';
+
+            if (osc) { try { osc.frequency.value = 60 + Math.random() * (200 + p * 1800); } catch (e) {} }
+
+            if (el >= DURATION) { clearInterval(glitchTick); showThanks(); }
+          }, 60);
+
+          function showThanks() {
+            if (osc) { try { osc.stop(); } catch (e) {} }
+            ov.style.filter = 'none'; ov.style.background = '#fff';
+            setTimeout(() => { ov.style.background = '#000'; }, 120);
+            stage.style.transform = 'none'; slices.innerHTML = '';
+            canvas.style.opacity = 0.12;
+            $('intro-glitch-wrap').style.display = 'none';
+            thanks.classList.remove('hidden');
+
+            const final = 'Thank you to the developer FRA';
+            const dec0 = performance.now(), decDur = 1800;
+            const dec = setInterval(() => {
+              const k = Math.floor(((performance.now() - dec0) / decDur) * final.length);
+              const out = final.split('').map((c, i) => i < k || c === ' ' ? c : rnd(chars)).join('');
+              thanks.textContent = out; thanks.setAttribute('data-text', out);
+              if (k >= final.length) {
+                clearInterval(dec);
+                thanks.textContent = final; thanks.setAttribute('data-text', final);
+              }
+            }, 40);
+
+            setTimeout(() => {
+              cdWrap.classList.remove('hidden');
+              let n = 5; cd.textContent = n; beep(660);
+              const cdTimer = setInterval(() => {
+                n--;
+                if (n > 0) { cd.textContent = n; beep(660); }
+                else {
+                  clearInterval(cdTimer);
+                  beep(1200, 0.4);
+                  ov.style.opacity = 0;
+                  setTimeout(() => {
+                    ov.classList.remove('active');
+                    canvas.style.opacity = 0.4;
+                    introRunning = false;
+                    if (ac) { try { ac.close(); } catch (e) {} }
+                    enterQuizMode();
+                  }, 600);
+                }
+              }, 1000);
+            }, 2200);
+          }
+        }
+
     </script>
 </body>
 </html>
