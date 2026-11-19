@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulasi CAT SKD CPNS Standar BKN - 110 Soal</title>
+    <title>Simulasi CAT SKD CPNS - Tryout</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -64,12 +64,14 @@
                 <div class="bg-blue-600 px-3 py-1.5 rounded-lg font-extrabold text-base sm:text-lg tracking-wider shadow-sm">CAT BKN</div>
                 <div>
                     <h1 class="font-bold text-sm sm:text-lg leading-tight">Simulasi SKD CPNS Nasional</h1>
-                    <p class="text-xs text-slate-400">110 Soal • TWK (30) • TIU (35) • TKP (45)</p>
+                    <p id="header-sub" class="text-xs text-slate-400">Tryout SKD • TWK • TIU • TKP</p>
                 </div>
             </div>
 
             <!-- Info Peserta & Timer -->
             <div class="flex items-center space-x-3 sm:space-x-4">
+                <button id="btn-home" type="button" onclick="goHome()" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700">Beranda</button>
+                <button id="btn-admin" type="button" onclick="openAdminLogin()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700">🔐 Admin</button>
                 <div id="header-participant" class="hidden md:flex flex-col text-right border-r border-slate-700 pr-4">
                     <span id="header-name" class="text-xs font-bold text-white truncate max-w-[180px]">Peserta</span>
                     <span id="header-id" class="text-[11px] font-mono text-slate-400">No: -</span>
@@ -94,79 +96,106 @@
     <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6">
 
-        <!-- 1. Start Screen & Form Pengisian Nama -->
+        <!-- 1. Layar Masuk Peserta -->
         <div id="start-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 mt-2">
             <div class="text-center mb-6">
                 <span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-2 tracking-wide uppercase">Computer Assisted Test (CAT)</span>
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Seleksi Kompetensi Dasar (SKD)</h2>
-                <p class="text-slate-600 mt-1.5 text-sm">Silakan lengkapi identitas peserta sebelum memulai simulasi ujian.</p>
+                <p class="text-slate-600 mt-1.5 text-sm">Masukkan identitas peserta untuk membuka beranda tryout dan papan nilai.</p>
             </div>
 
-            <!-- Banner Sesi Tersimpan (Muncul jika ada data di localStorage) -->
-            <div id="resume-banner" class="hidden mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                <div class="flex items-start space-x-3">
-                    <div class="bg-emerald-100 text-emerald-700 p-2 rounded-lg mt-0.5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-emerald-900 text-sm">Sesi Ujian Sebelumnya Ditemukan</h4>
-                        <p class="text-xs text-emerald-800 mt-0.5" id="resume-info">Peserta: - | Terjawab: 0/110 soal</p>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <button type="button" onclick="resumeSavedExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm transition">
-                                Lanjutkan Sesi Terakhir
-                            </button>
-                            <button type="button" onclick="resetSavedData()" class="bg-white hover:bg-red-50 text-red-600 border border-red-200 text-xs font-semibold px-3 py-2 rounded-lg transition">
-                                Hapus & Mulai Baru
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Form Identitas Peserta -->
             <form id="participant-form" onsubmit="handleStartSubmit(event)" class="space-y-4 mb-6">
                 <div>
                     <label for="input-name" class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap Peserta <span class="text-red-500">*</span></label>
-                    <input type="text" id="input-name" required placeholder="Masukkan nama lengkap Anda (contoh: Budi Santoso, S.Kom.)"
+                    <input type="text" id="input-name" required maxlength="80" placeholder="Masukkan nama lengkap Anda (contoh: Budi Santoso, S.Kom.)"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-sm transition">
                     <p id="name-error" class="hidden text-xs text-red-600 mt-1">Nama lengkap peserta wajib diisi terlebih dahulu.</p>
                 </div>
-
                 <div>
-                    <label for="input-reg" class="block text-sm font-semibold text-slate-700 mb-1">Nomor Ujian / Peserta <span class="text-slate-400 font-normal">(Opsional - Otomatis jika kosong)</span></label>
-                    <input type="text" id="input-reg" placeholder="Contoh: 2630041120001845"
+                    <label for="input-reg" class="block text-sm font-semibold text-slate-700 mb-1">Nomor Ujian / Peserta <span class="text-slate-400 font-normal">(Opsional - otomatis jika kosong)</span></label>
+                    <input type="text" id="input-reg" maxlength="40" placeholder="Contoh: 2630041120001845"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-sm font-mono transition">
+                    <p class="text-[11px] text-slate-500 mt-1">Gunakan nama dan nomor yang sama bila ingin melanjutkan progres tryout di perangkat lain.</p>
                 </div>
-
-                <!-- Spesifikasi Ujian -->
-                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2.5 text-xs sm:text-sm mt-4">
-                    <div class="flex justify-between border-b border-slate-200 pb-2">
-                        <span class="text-slate-600">Jumlah Soal Standar BKN:</span>
-                        <span class="font-bold text-slate-900">110 Soal (30 TWK, 35 TIU, 45 TKP)</span>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-200 pb-2">
-                        <span class="text-slate-600">Batas Waktu Pengerjaan:</span>
-                        <span class="font-bold text-slate-900">100 Menit (01:40:00)</span>
-                    </div>
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2 text-xs sm:text-sm">
                     <div class="flex justify-between border-b border-slate-200 pb-2">
                         <span class="text-slate-600">Ambang Batas (Passing Grade):</span>
                         <span class="font-bold text-slate-900">TWK: 65 | TIU: 80 | TKP: 166</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-slate-600">Konversi Nilai Akhir:</span>
-                        <span class="font-bold text-blue-700">Skala Maksimal 450 (dan Skor Asli 550)</span>
+                        <span class="font-bold text-blue-700">Skala 450 (skor asli 550)</span>
                     </div>
                 </div>
-
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition duration-150 flex items-center justify-center space-x-2 text-base mt-2">
-                    <span>Mulai Ujian CAT Sekarang</span>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition duration-150 flex items-center justify-center space-x-2 text-base">
+                    <span>Masuk ke Beranda Tryout</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </form>
 
             <button type="button" onclick="openHistory()" class="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
-                Riwayat Peserta &amp; Nilai (<span id="hist-count">0</span>)
+                Riwayat Nilai di Perangkat Ini (<span id="hist-count">0</span>)
             </button>
+        </div>
+
+        <!-- 1b. Beranda Peserta: daftar tryout + leaderboard -->
+        <div id="home-screen" class="hidden max-w-5xl mx-auto space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-wrap justify-between items-center gap-3">
+                <div>
+                    <span class="inline-block bg-blue-100 text-blue-800 text-[11px] font-bold px-3 py-1 rounded-full mb-1 tracking-wide uppercase">Beranda Peserta</span>
+                    <h2 id="home-greeting" class="text-xl sm:text-2xl font-extrabold text-slate-900">Halo!</h2>
+                    <p class="text-xs font-mono text-slate-500 mt-0.5">No. Peserta: <span id="home-reg">-</span></p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="openHistory()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Riwayat (<span id="hist-count-home">0</span>)</button>
+                    <button type="button" onclick="logoutParticipant()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Ganti Peserta</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex flex-wrap justify-between items-end gap-2 mb-3 px-1">
+                    <h3 class="text-lg font-extrabold text-slate-900">Pilih Tryout</h3>
+                    <p id="home-sync" class="text-[11px] text-slate-500"></p>
+                </div>
+                <div id="tryout-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900">Leaderboard Nilai</h3>
+                        <p id="hlb-status" class="text-xs text-slate-500">Memuat...</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="hlb-select" onchange="loadHomeBoard()" class="px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-blue-600"></select>
+                        <button type="button" onclick="loadHomeBoard()" class="px-3 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50">Muat Ulang</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs sm:text-sm text-left">
+                        <thead class="text-slate-600 border-b border-slate-200">
+                            <tr><th class="py-2 pr-2">Peringkat</th><th class="pr-2">Nama</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="hlb-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1c. Panel Admin -->
+        <div id="admin-screen" class="hidden max-w-6xl mx-auto space-y-4">
+            <div class="bg-slate-900 text-white rounded-2xl p-5 flex flex-wrap justify-between items-center gap-3">
+                <div>
+                    <span class="inline-block bg-amber-400 text-slate-900 text-[11px] font-extrabold px-3 py-1 rounded-full mb-1 tracking-wide uppercase">Mode Admin</span>
+                    <h2 class="text-xl font-extrabold">Panel Pengelolaan Tryout</h2>
+                    <p id="admin-status" class="text-xs text-slate-400"></p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="adminExit()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold">Keluar Admin</button>
+                </div>
+            </div>
+            <div id="admin-tabs" class="flex flex-wrap gap-2"></div>
+            <div id="admin-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6"></div>
         </div>
 
         <!-- 2. Quiz Screen -->
@@ -179,7 +208,7 @@
                         <!-- Category & Number Badge -->
                         <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-4 mb-5">
                             <div class="flex items-center space-x-2">
-                                <span class="bg-slate-900 text-white font-bold px-3.5 py-1 rounded-lg text-sm">Soal No. <span id="q-number">1</span> / 110</span>
+                                <span class="bg-slate-900 text-white font-bold px-3.5 py-1 rounded-lg text-sm">Soal No. <span id="q-number">1</span> / <span id="q-total">110</span></span>
                                 <span id="q-category-badge" class="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-lg text-xs uppercase tracking-wide">TWK</span>
                             </div>
                             <span id="q-subtopic" class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">Subtes</span>
@@ -233,16 +262,12 @@
                     </div>
 
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-slate-800 text-sm">Navigasi Nomor (1–110)</h3>
-                        <span class="text-xs font-medium text-slate-600"><span id="answered-count" class="font-bold text-emerald-600">0</span> / 110 Dijawab</span>
+                        <h3 class="font-bold text-slate-800 text-sm">Navigasi Nomor (<span id="nav-range">1–110</span>)</h3>
+                        <span class="text-xs font-medium text-slate-600"><span id="answered-count" class="font-bold text-emerald-600">0</span> / <span id="nav-total">110</span> Dijawab</span>
                     </div>
 
                     <!-- Filter Subtes Cepat -->
-                    <div class="grid grid-cols-3 gap-1.5 mb-3 text-[11px] font-semibold">
-                        <button type="button" onclick="renderQuestion(0)" class="py-1 px-2 rounded bg-red-50 text-red-700 hover:bg-red-100 border border-red-200">TWK (1-30)</button>
-                        <button type="button" onclick="renderQuestion(30)" class="py-1 px-2 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">TIU (31-65)</button>
-                        <button type="button" onclick="renderQuestion(65)" class="py-1 px-2 rounded bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200">TKP (66-110)</button>
-                    </div>
+                    <div id="quick-nav" class="grid grid-cols-3 gap-1.5 mb-3 text-[11px] font-semibold"></div>
 
                     <!-- Legend -->
                     <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-600 mb-3 pb-3 border-b border-slate-100">
@@ -279,7 +304,7 @@
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-5 mb-6 gap-4">
                     <div>
-                        <span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-1">SERTIFIKAT HASIL SIMULASI CAT</span>
+                        <span id="res-badge" class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-1">SERTIFIKAT HASIL SIMULASI CAT</span>
                         <h2 class="text-2xl font-extrabold text-slate-900" id="res-participant-name">Nama Peserta</h2>
                         <p class="text-xs font-mono text-slate-500 mt-0.5">Nomor Peserta: <span id="res-participant-id">-</span> • <span id="finish-reason">Ujian selesai</span></p>
                     </div>
@@ -324,7 +349,7 @@
                     <!-- TWK -->
                     <div class="p-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-extrabold text-slate-900 text-base">TWK (30 Soal)</span>
+                            <span id="twk-title" class="font-extrabold text-slate-900 text-base">TWK (30 Soal)</span>
                             <span id="twk-status" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">LULUS PG</span>
                         </div>
                         <p class="text-xs text-slate-500 mb-3">Tes Wawasan Kebangsaan</p>
@@ -341,7 +366,7 @@
                     <!-- TIU -->
                     <div class="p-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-extrabold text-slate-900 text-base">TIU (35 Soal)</span>
+                            <span id="tiu-title" class="font-extrabold text-slate-900 text-base">TIU (35 Soal)</span>
                             <span id="tiu-status" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">LULUS PG</span>
                         </div>
                         <p class="text-xs text-slate-500 mb-3">Tes Intelegensia Umum</p>
@@ -358,7 +383,7 @@
                     <!-- TKP -->
                     <div class="p-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-extrabold text-slate-900 text-base">TKP (45 Soal)</span>
+                            <span id="tkp-title" class="font-extrabold text-slate-900 text-base">TKP (45 Soal)</span>
                             <span id="tkp-status" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">LULUS PG</span>
                         </div>
                         <p class="text-xs text-slate-500 mb-3">Tes Karakteristik Pribadi</p>
@@ -373,10 +398,11 @@
                     </div>
                 </div>
 
+                <p id="norm-note" class="hidden mt-4 text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></p>
                 <!-- Action Buttons -->
                 <div class="mt-8 pt-5 border-t border-slate-100 flex flex-wrap justify-center gap-3 no-print">
                     <button type="button" onclick="toggleReview()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm shadow-sm transition">
-                        Lihat Pembahasan 110 Soal
+                        Lihat Pembahasan <span id="rev-count-btn">110</span> Soal
                     </button>
                     <button type="button" onclick="printResult()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 rounded-xl text-sm shadow-sm transition">
                         Cetak / Simpan PDF Hasil
@@ -387,8 +413,8 @@
                     <button type="button" onclick="openHistory()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
                         Riwayat Peserta
                     </button>
-                    <button type="button" onclick="startNewAttempt()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
-                        Mulai Simulasi Baru
+                    <button type="button" onclick="goHome()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2.5 px-6 rounded-xl text-sm transition">
+                        Kembali ke Beranda
                     </button>
                 </div>
             </div>
@@ -415,9 +441,9 @@
             <!-- Review Section -->
             <div id="review-section" class="hidden space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-2 px-1">
-                    <h3 class="font-bold text-lg text-slate-800">Kunci Jawaban & Pembahasan Lengkap (110 Soal)</h3>
+                    <h3 class="font-bold text-lg text-slate-800">Kunci Jawaban & Pembahasan Lengkap (<span id="rev-count-h">110</span> Soal)</h3>
                     <div class="flex gap-1.5 text-xs no-print">
-                        <button type="button" onclick="filterReview('ALL')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-semibold">Semua (110)</button>
+                        <button type="button" onclick="filterReview('ALL')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-semibold">Semua (<span id="rev-count-all">110</span>)</button>
                         <button type="button" onclick="filterReview('TWK')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50">TWK</button>
                         <button type="button" onclick="filterReview('TIU')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50">TIU</button>
                         <button type="button" onclick="filterReview('TKP')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50">TKP</button>
@@ -469,14 +495,29 @@
         <div class="overflow-auto flex-1 p-4">
           <table class="w-full text-xs sm:text-sm text-left">
             <thead class="text-slate-600 border-b border-slate-200">
-              <tr><th class="py-2 pr-2">#</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th class="pr-2">Status</th><th></th></tr>
+              <tr><th class="py-2 pr-2">#</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">Tryout</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th class="pr-2">Status</th><th></th></tr>
             </thead>
             <tbody id="hist-body"></tbody>
           </table>
           <p id="hist-empty" class="hidden text-center text-slate-500 text-sm py-10">Belum ada peserta yang menyelesaikan ujian.</p>
         </div>
-        <p class="px-5 pb-4 text-[11px] text-slate-500">Data disimpan di browser perangkat ini saja (localStorage), tanpa server/database. Gunakan Ekspor CSV atau Backup JSON untuk menyimpan atau memindahkan data.</p>
+        <p class="px-5 pb-4 text-[11px] text-slate-500">Riwayat ini hanya mencakup perangkat ini (localStorage). Leaderboard resmi dan manajemen lengkap ada di server Google Sheets / mode Admin.</p>
       </div>
+    </div>
+
+    <!-- Modal Login Admin -->
+    <div id="admin-login-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 items-center justify-center p-4">
+        <form onsubmit="adminLoginSubmit(event)" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Masuk Mode Admin</h3>
+            <p class="text-xs text-slate-500 mb-4">Password diverifikasi oleh server Google Apps Script.</p>
+            <input id="admin-pwd" type="password" autocomplete="current-password" required placeholder="Password admin"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 outline-none text-sm mb-2">
+            <p id="admin-login-error" class="hidden text-xs text-red-600 mb-2"></p>
+            <div class="flex gap-2 mt-3">
+                <button type="button" onclick="closeAdminLogin()" class="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Batal</button>
+                <button id="admin-login-btn" type="submit" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm">Masuk</button>
+            </div>
+        </form>
     </div>
 
     <div id="print-area"></div>
@@ -519,7 +560,7 @@
         // =========================================================================
         // BANK SOAL STANDAR BKN: 110 SOAL (30 TWK, 35 TIU, 45 TKP)
         // =========================================================================
-        const questions = [
+        const BUILTIN_T1_QUESTIONS = [
             // ==================== TWK (30 SOAL: No 1 - 30) ====================
             {
                 id: 1, category: "TWK", subtopic: "Nasionalisme",
@@ -1848,20 +1889,215 @@
         ];
 
         // =========================================================================
+        // BANK SOAL TRYOUT 2 & 3 (30 soal: 8 TWK, 10 TIU, 12 TKP)
+        // Skor tiap subtes dinormalisasi ke skala BKN (TWK 150, TIU 175, TKP 225)
+        // =========================================================================
+        const _S = (cat, sub, q, opts, key, exp) => ({ category: cat, subtopic: sub, question: q,
+            options: opts.map((t, i) => ({ text: t, score: i === key ? 5 : 0 })), explanation: exp });
+        // TKP: opsi ditulis berurutan dari skor 5 ke 1, lalu diacak deterministik
+        const _K = (sub, q, ordered, exp, shift) => {
+            const base = ordered.map((t, i) => ({ text: t, score: 5 - i }));
+            const out = []; for (let j = 0; j < 5; j++) out.push(base[(j * 2 + shift) % 5]);
+            return { category: 'TKP', subtopic: sub, question: q, options: out, explanation: exp };
+        };
+        const _fin = arr => arr.map((q, i) => Object.assign({ id: i + 1 }, q));
+
+        const BUILTIN_T2_QUESTIONS = _fin([
+            // ---- TWK (8) ----
+            _S('TWK', 'Pancasila', 'Dalam rapat RT, warga berbeda pendapat tentang pemasangan portal di gerbang lingkungan. Sikap yang paling mencerminkan nilai sila keempat Pancasila adalah...',
+                ['Memaksakan pendapat karena merasa paling banyak berkontribusi', 'Mengutamakan musyawarah untuk mufakat dan menghormati keputusan bersama', 'Meninggalkan rapat bila usulan tidak diterima', 'Menyerahkan keputusan kepada ketua RT tanpa diskusi', 'Mengambil suara terbanyak tanpa mendengar alasan pihak minoritas'], 1,
+                'Sila keempat menekankan kerakyatan yang dipimpin oleh hikmat kebijaksanaan dalam permusyawaratan/perwakilan, yaitu musyawarah mufakat dan penghormatan pada keputusan bersama.'),
+            _S('TWK', 'UUD 1945', 'Perubahan (amandemen) UUD 1945 yang dilakukan MPR pada kurun 1999–2002 berlangsung sebanyak...',
+                ['Dua kali', 'Tiga kali', 'Empat kali', 'Lima kali', 'Enam kali'], 2,
+                'UUD 1945 diamandemen empat kali, yaitu pada tahun 1999, 2000, 2001, dan 2002.'),
+            _S('TWK', 'Sejarah Pergerakan', 'Ikrar ketiga Sumpah Pemuda 28 Oktober 1928 berbunyi...',
+                ['Bertumpah darah satu, tanah air Indonesia', 'Berbangsa satu, bangsa Indonesia', 'Menjunjung bahasa persatuan, bahasa Indonesia', 'Berbahasa satu, bahasa daerah masing-masing', 'Bernegara satu, negara Republik Indonesia'], 2,
+                'Tiga ikrar Sumpah Pemuda: satu tumpah darah, satu bangsa, dan menjunjung bahasa persatuan, yaitu bahasa Indonesia.'),
+            _S('TWK', 'Bhinneka Tunggal Ika', 'Seorang ASN di kantor pelayanan menerima warga dari beragam suku dan agama. Sikap yang mencerminkan semangat Bhinneka Tunggal Ika adalah...',
+                ['Memprioritaskan warga yang berasal dari suku yang sama dengannya', 'Melayani semua warga secara setara tanpa membedakan latar belakang', 'Menyediakan loket khusus berdasarkan agama', 'Menyesuaikan kualitas layanan dengan status sosial warga', 'Menghindari percakapan dengan warga yang berbeda keyakinan'], 1,
+                'Bhinneka Tunggal Ika berarti berbeda-beda tetapi satu jua; ASN wajib memberikan layanan setara kepada seluruh warga.'),
+            _S('TWK', 'Otonomi Daerah', 'Penyerahan urusan pemerintahan oleh pemerintah pusat kepada daerah otonom untuk diatur dan diurus sendiri disebut...',
+                ['Dekonsentrasi', 'Desentralisasi', 'Sentralisasi', 'Tugas pembantuan', 'Delegasi'], 1,
+                'Desentralisasi adalah penyerahan urusan pemerintahan dari pusat kepada daerah otonom berdasarkan asas otonomi.'),
+            _S('TWK', 'Integritas', 'Seorang ASN mengetahui dirinya memiliki hubungan keluarga dengan salah satu peserta lelang di unitnya. Tindakan yang tepat sesuai prinsip pencegahan benturan kepentingan adalah...',
+                ['Diam saja karena lelang tetap berjalan sesuai aturan', 'Mengungkapkan potensi benturan kepentingan kepada atasan dan mundur dari proses penilaian', 'Membantu peserta tersebut secara diam-diam', 'Memberi tahu keluarga tentang harga perkiraan sendiri', 'Meminta rekan lain menyembunyikan hubungan tersebut'], 1,
+                'Benturan kepentingan harus diungkapkan secara terbuka kepada atasan dan pegawai yang bersangkutan tidak ikut dalam pengambilan keputusan.'),
+            _S('TWK', 'Wawasan Nusantara', 'Deklarasi Djuanda 13 Desember 1957 menyatakan bahwa...',
+                ['Indonesia membebaskan seluruh perairan menjadi laut internasional', 'Laut di antara dan di dalam kepulauan Indonesia merupakan bagian wilayah NKRI', 'Wilayah laut Indonesia hanya sejauh 3 mil dari garis pantai', 'Pulau-pulau terluar tidak termasuk wilayah Indonesia', 'Batas wilayah laut diatur sepenuhnya oleh PBB'], 1,
+                'Deklarasi Djuanda menegaskan konsep negara kepulauan: laut di antara pulau-pulau adalah satu kesatuan wilayah Indonesia.'),
+            _S('TWK', 'Nilai Dasar ASN', 'Dalam core values ASN BerAKHLAK, perilaku "Akuntabel" ditunjukkan dengan...',
+                ['Menggunakan kewenangan jabatan untuk kepentingan pribadi', 'Melaksanakan tugas dengan jujur, bertanggung jawab, cermat, serta menjaga barang milik negara', 'Menghindari tanggung jawab saat terjadi kesalahan tim', 'Menyembunyikan data kinerja yang kurang baik', 'Mengutamakan pencitraan dibanding hasil kerja'], 1,
+                'Akuntabel: bertanggung jawab atas kewenangan dan kinerja, jujur, cermat, serta menjaga barang milik negara dan menghindari penyalahgunaan jabatan.'),
+            // ---- TIU (10) ----
+            _S('TIU', 'Sinonim', 'EFISIEN = ...', ['Boros', 'Berdaya guna', 'Rumit', 'Lambat', 'Mewah'], 1,
+                'Efisien berarti tepat atau berdaya guna dalam menjalankan sesuatu tanpa membuang waktu, tenaga, atau biaya.'),
+            _S('TIU', 'Antonim', 'TRANSPARAN >< ...', ['Jelas', 'Terbuka', 'Tertutup', 'Nyata', 'Bening'], 2,
+                'Transparan berarti terbuka/jelas; lawan katanya adalah tertutup.'),
+            _S('TIU', 'Analogi', 'Dokter : Rumah Sakit = Guru : ...', ['Murid', 'Sekolah', 'Buku', 'Kapur', 'Ujian'], 1,
+                'Dokter bekerja di rumah sakit, sebagaimana guru bekerja di sekolah (hubungan profesi dan tempat kerja).'),
+            _S('TIU', 'Deret Angka', 'Lanjutan deret 2, 6, 18, 54, ... adalah...', ['108', '120', '162', '180', '216'], 2,
+                'Setiap suku dikalikan 3: 54 × 3 = 162.'),
+            _S('TIU', 'Rata-rata', 'Rata-rata lima bilangan adalah 12. Jika satu bilangan bernilai 20 dikeluarkan, rata-rata empat bilangan sisanya adalah...', ['8', '9', '10', '11', '12'], 2,
+                'Jumlah lima bilangan = 5 × 12 = 60. Setelah 20 dikeluarkan, sisa = 40, rata-ratanya 40 ÷ 4 = 10.'),
+            _S('TIU', 'Aritmetika Sosial', 'Harga sebuah barang Rp80.000. Barang itu didiskon 25%, kemudian mendapat diskon tambahan 10% dari harga setelah diskon pertama. Harga akhir barang adalah...', ['Rp48.000', 'Rp52.000', 'Rp54.000', 'Rp56.000', 'Rp60.000'], 2,
+                '80.000 × 0,75 = 60.000; lalu 60.000 × 0,9 = 54.000.'),
+            _S('TIU', 'Jarak & Kecepatan', 'Sebuah mobil menempuh 180 km dalam 2,5 jam. Dengan kecepatan yang sama, jarak yang ditempuh dalam 3,5 jam adalah...', ['216 km', '234 km', '252 km', '270 km', '288 km'], 2,
+                'Kecepatan = 180 ÷ 2,5 = 72 km/jam. Jarak = 72 × 3,5 = 252 km.'),
+            _S('TIU', 'Perbandingan', 'Perbandingan umur ayah dan anak adalah 7 : 2. Jika jumlah umur keduanya 45 tahun, umur anak adalah...', ['8 tahun', '10 tahun', '12 tahun', '14 tahun', '15 tahun'], 1,
+                'Total bagian = 9. Umur anak = 2/9 × 45 = 10 tahun.'),
+            _S('TIU', 'Silogisme', 'Semua pegawai yang disiplin mendapat penghargaan. Sebagian pegawai divisi A disiplin. Kesimpulan yang pasti benar adalah...',
+                ['Semua pegawai divisi A mendapat penghargaan', 'Sebagian pegawai divisi A mendapat penghargaan', 'Tidak ada pegawai divisi A yang mendapat penghargaan', 'Semua pegawai yang mendapat penghargaan berasal dari divisi A', 'Pegawai divisi A yang tidak disiplin mendapat penghargaan'], 1,
+                'Pegawai divisi A yang disiplin pasti mendapat penghargaan, sehingga sebagian pegawai divisi A mendapat penghargaan.'),
+            _S('TIU', 'Logika', 'Jika hujan turun maka jalan basah. Saat ini jalan tidak basah. Kesimpulan yang tepat adalah...',
+                ['Hujan sedang turun', 'Hujan tidak turun', 'Jalan akan segera basah', 'Mungkin hujan turun', 'Jalan tidak pernah basah'], 1,
+                'Kontraposisi: jika jalan tidak basah, maka hujan tidak turun (modus tollens).'),
+            // ---- TKP (12) ----
+            _K('Pelayanan Publik', 'Anda petugas loket. Antrean panjang dan seorang warga marah karena menunggu terlalu lama. Sikap Anda...',
+                ['Menenangkan warga, meminta maaf, menyampaikan estimasi waktu, dan meminta bantuan rekan membuka loket tambahan', 'Menjelaskan alasan keterlambatan dengan sopan dan melanjutkan pelayanan sesuai urutan', 'Meminta warga menunggu sambil melanjutkan pekerjaan', 'Mendahulukan warga yang marah agar situasi kondusif', 'Mengabaikan keluhan dan fokus pada warga di depan loket'],
+                'Skor 5: empati, informasi jelas, dan solusi nyata tanpa melanggar prosedur.', 0),
+            _K('Jejaring Kerja', 'Anda membutuhkan data dari unit lain yang sulit dihubungi, padahal tenggat laporan esok hari. Tindakan Anda...',
+                ['Menghubungi lewat berbagai kanal, menjelaskan urgensi, dan melibatkan atasan bila tidak ada respons', 'Mendatangi langsung unit tersebut untuk meminta data', 'Mengirim pesan berulang sampai dibalas', 'Memakai data tahun lalu tanpa konfirmasi', 'Menunda pekerjaan hingga unit tersebut merespons'],
+                'Skor 5: proaktif, komunikatif, dan menggunakan jalur koordinasi yang tepat.', 1),
+            _K('Sosial Budaya', 'Di daerah penempatan, warga mengadakan upacara adat pada jam layanan kantor. Sikap Anda...',
+                ['Menghormati adat, mengatur jadwal layanan agar tidak bentrok, dan berkoordinasi dengan tokoh adat', 'Menghormati adat dan menyesuaikan pekerjaan setelah upacara', 'Tidak ikut campur dan melanjutkan pekerjaan', 'Meminta warga menunda upacara karena jam kerja', 'Mengkritik adat tersebut sebagai penghambat pelayanan'],
+                'Skor 5: menghargai budaya lokal sekaligus menjaga kelancaran pelayanan.', 2),
+            _K('TIK', 'Kantor menerapkan aplikasi baru dan beberapa rekan senior kesulitan mengoperasikannya. Anda...',
+                ['Mengadakan pendampingan singkat dan membuat panduan sederhana bagi rekan yang kesulitan', 'Membantu rekan yang meminta bantuan', 'Menyarankan mereka mengikuti pelatihan resmi', 'Membiarkan mereka belajar sendiri', 'Mengusulkan agar aplikasi lama tetap dipertahankan'],
+                'Skor 5: inisiatif membantu adaptasi teknologi secara kolaboratif.', 3),
+            _K('Profesionalisme', 'Atasan memberi tugas di luar keahlian Anda dengan tenggat yang ketat. Anda...',
+                ['Menerima tugas, mempelajari materi, meminta arahan dari yang berpengalaman, dan melaporkan progres', 'Menerima dan mengerjakan sebisanya', 'Meminta tugas dialihkan kepada yang lebih ahli', 'Mengerjakan tanpa bertanya agar tidak terlihat tidak mampu', 'Menolak karena bukan bidang Anda'],
+                'Skor 5: bertanggung jawab, mau belajar, dan transparan terhadap progres.', 4),
+            _K('Anti Radikalisme', 'Seorang rekan menyebarkan konten ujaran kebencian di grup WhatsApp kantor. Anda...',
+                ['Menegur secara pribadi dengan baik, meminta menghapus konten, dan melapor ke atasan bila berulang', 'Mengingatkan di grup agar tidak menyebarkan konten tersebut', 'Menghapus pesan tanpa komentar', 'Keluar dari grup', 'Mengabaikan karena dianggap urusan pribadi'],
+                'Skor 5: menegur dengan santun dan menempuh jalur pelaporan bila perlu.', 0),
+            _K('Integritas', 'Rekan meminta Anda menandatangani daftar hadir untuknya padahal ia tidak masuk kerja. Anda...',
+                ['Menolak tegas, mengingatkan konsekuensi disiplin, dan menyarankan mengajukan izin resmi', 'Menolak dan meminta ia menghubungi atasan', 'Menolak tanpa memberi penjelasan', 'Memenuhi sekali ini dengan syarat tidak diulang', 'Menandatangani agar hubungan tetap baik'],
+                'Skor 5: menjaga integritas dan memberi jalan keluar yang sesuai aturan.', 1),
+            _K('Kerja Sama', 'Salah satu anggota tim Anda kurang berkontribusi dalam proyek. Anda...',
+                ['Mengajaknya berdiskusi untuk mengetahui kendala dan menawarkan pembagian tugas sesuai kemampuannya', 'Melaporkan ke ketua tim agar dicarikan solusi', 'Mengambil alih bagiannya agar tugas selesai', 'Menyindirnya dalam rapat', 'Membiarkan dan hanya mengerjakan bagian sendiri'],
+                'Skor 5: komunikasi langsung, empatik, dan solutif.', 2),
+            _K('Pengambilan Keputusan', 'Terjadi gangguan sistem saat batas pelaporan, sementara atasan sedang dinas luar tanpa sinyal. Anda...',
+                ['Mengambil langkah darurat sesuai SOP (pelaporan manual), mendokumentasikannya, lalu melapor setelah atasan dapat dihubungi', 'Mencoba menghubungi atasan berulang kali sambil menyiapkan data', 'Meminta rekan senior mengambil keputusan', 'Menunggu sistem pulih tanpa tindakan', 'Membiarkan batas waktu terlewat dan menjelaskan nanti'],
+                'Skor 5: sigap, sesuai prosedur, dan akuntabel.', 3),
+            _K('Orientasi Pelayanan', 'Seorang warga lansia kesulitan mengisi formulir daring. Anda...',
+                ['Mendampingi dengan sabar sampai formulir berhasil dikirim dan memastikan datanya benar', 'Membantu mengisikan datanya dari formulir kertas', 'Menjelaskan langkah-langkahnya lalu mempersilakan mencoba sendiri', 'Menyarankan meminta bantuan anggota keluarga', 'Meminta warga mengikuti prosedur sebagaimana mestinya'],
+                'Skor 5: pelayanan ramah dan inklusif bagi kelompok rentan.', 4),
+            _K('Manajemen Waktu', 'Beban kerja menumpuk menjelang akhir tahun anggaran. Anda...',
+                ['Menyusun prioritas, membagi pekerjaan dalam jadwal, dan meminta bantuan bila diperlukan', 'Lembur untuk menyelesaikan semuanya sendiri', 'Mengerjakan yang mudah terlebih dahulu', 'Mengeluh kepada rekan kerja', 'Menunda sampai ada instruksi atasan'],
+                'Skor 5: perencanaan dan pengelolaan prioritas yang sistematis.', 0),
+            _K('Pengembangan Diri', 'Atasan mengkritik laporan Anda di depan rekan-rekan. Anda...',
+                ['Menerima kritik, mencatat perbaikan, dan menemui atasan untuk meminta masukan lebih rinci', 'Menerima kritik dan memperbaiki laporan', 'Diam dan memperbaiki tanpa bertanya', 'Membela diri dengan menjelaskan alasan', 'Merasa dipermalukan dan mengeluh kepada rekan'],
+                'Skor 5: terbuka terhadap kritik dan berorientasi pada perbaikan.', 1)
+        ]);
+
+        const BUILTIN_T3_QUESTIONS = _fin([
+            // ---- TWK (8) ----
+            _S('TWK', 'Pancasila', 'Hari Lahir Pancasila diperingati setiap 1 Juni karena merujuk pada pidato Ir. Soekarno dalam sidang...',
+                ['PPKI', 'BPUPKI', 'Konferensi Meja Bundar', 'Kongres Pemuda II', 'Dokuritsu Junbi Inkai tanggal 18 Agustus'], 1,
+                'Pada 1 Juni 1945 Ir. Soekarno menyampaikan gagasan dasar negara bernama Pancasila dalam sidang BPUPKI.'),
+            _S('TWK', 'Tata Hukum', 'Urutan jenis peraturan perundang-undangan dari yang tertinggi menurut hierarkinya adalah...',
+                ['UUD 1945 – TAP MPR – UU/Perppu – Peraturan Pemerintah – Peraturan Presiden', 'UUD 1945 – UU/Perppu – TAP MPR – Peraturan Presiden – Peraturan Pemerintah', 'TAP MPR – UUD 1945 – UU/Perppu – Peraturan Pemerintah – Peraturan Presiden', 'UUD 1945 – TAP MPR – Peraturan Pemerintah – UU/Perppu – Peraturan Presiden', 'UU/Perppu – UUD 1945 – TAP MPR – Peraturan Presiden – Peraturan Pemerintah'], 0,
+                'Hierarki: UUD 1945, TAP MPR, UU/Perppu, Peraturan Pemerintah, Peraturan Presiden, Perda Provinsi, Perda Kabupaten/Kota.'),
+            _S('TWK', 'Lembaga Negara', 'Lembaga negara yang berwenang menguji undang-undang terhadap UUD 1945 adalah...',
+                ['Mahkamah Agung', 'Mahkamah Konstitusi', 'Dewan Perwakilan Rakyat', 'Komisi Yudisial', 'Badan Pemeriksa Keuangan'], 1,
+                'Mahkamah Konstitusi berwenang menguji UU terhadap UUD 1945, sedangkan Mahkamah Agung menguji peraturan di bawah UU terhadap UU.'),
+            _S('TWK', 'Ekonomi Pancasila', 'Pasal 33 ayat (3) UUD 1945 menyatakan bumi, air, dan kekayaan alam dikuasai negara dan dipergunakan untuk...',
+                ['Sebesar-besar kemakmuran rakyat', 'Kepentingan investor asing', 'Keuntungan badan usaha swasta terbesar', 'Pembiayaan belanja pegawai', 'Cadangan devisa negara semata'], 0,
+                'Pasal 33 ayat (3): dikuasai oleh negara dan dipergunakan untuk sebesar-besar kemakmuran rakyat.'),
+            _S('TWK', 'Bela Negara', 'Serangan siber yang meretas data layanan publik pemerintah termasuk dalam kategori ancaman...',
+                ['Militer konvensional', 'Nonmiliter berdimensi siber', 'Alamiah', 'Ekonomi murni', 'Budaya lokal'], 1,
+                'Serangan siber termasuk ancaman nonmiliter yang menyasar sistem informasi dan infrastruktur digital.'),
+            _S('TWK', 'Sejarah Kemerdekaan', 'Salah satu hasil Konferensi Meja Bundar (KMB) 1949 adalah...',
+                ['Belanda mengakui kedaulatan Republik Indonesia Serikat', 'Indonesia tetap menjadi koloni Belanda', 'Seluruh wilayah Papua langsung diserahkan', 'Pembubaran seluruh angkatan bersenjata Indonesia', 'Pembentukan Volksraad'], 0,
+                'KMB menghasilkan pengakuan kedaulatan Belanda terhadap Republik Indonesia Serikat pada 27 Desember 1949.'),
+            _S('TWK', 'Netralitas ASN', 'Seorang ASN diajak rekannya mengunggah dukungan kepada calon kepala daerah di media sosial pribadi. Sikap yang tepat adalah...',
+                ['Mengunggah karena itu akun pribadi', 'Menolak dan menjaga netralitas ASN dari kepentingan politik praktis', 'Mengunggah tetapi tanpa menyebut jabatan', 'Menyukai unggahan tersebut tanpa berkomentar', 'Mengajak rekan lain ikut mendukung'], 1,
+                'ASN wajib netral dan dilarang terlibat politik praktis, termasuk mendukung calon di media sosial.'),
+            _S('TWK', 'Politik Luar Negeri', 'Makna "bebas" dalam politik luar negeri bebas aktif Indonesia adalah...',
+                ['Tidak mau bekerja sama dengan negara lain', 'Tidak terikat pada blok atau pakta militer tertentu dan menentukan sikap sendiri', 'Bebas melanggar hukum internasional', 'Hanya berhubungan dengan negara tetangga', 'Menolak keanggotaan di organisasi internasional'], 1,
+                'Bebas berarti tidak memihak blok tertentu; aktif berarti ikut berperan menjaga perdamaian dunia.'),
+            // ---- TIU (10) ----
+            _S('TIU', 'Sinonim', 'AKURAT = ...', ['Tepat', 'Kabur', 'Lalai', 'Sementara', 'Samar'], 0,
+                'Akurat berarti tepat dan teliti.'),
+            _S('TIU', 'Antonim', 'EKSPLISIT >< ...', ['Tersurat', 'Terang', 'Implisit', 'Gamblang', 'Nyata'], 2,
+                'Eksplisit berarti dinyatakan secara jelas; lawannya implisit (tersirat).'),
+            _S('TIU', 'Analogi', 'Termometer : Suhu = Barometer : ...', ['Kelembapan', 'Tekanan udara', 'Kecepatan angin', 'Curah hujan', 'Arah mata angin'], 1,
+                'Termometer mengukur suhu; barometer mengukur tekanan udara.'),
+            _S('TIU', 'Deret Angka', 'Lanjutan deret 3, 5, 9, 17, 33, ... adalah...', ['49', '57', '63', '65', '67'], 3,
+                'Selisih berurutan 2, 4, 8, 16, sehingga selisih berikutnya 32: 33 + 32 = 65.'),
+            _S('TIU', 'Deret Angka', 'Lanjutan deret 2, 3, 5, 8, 12, 17, ... adalah...', ['21', '22', '23', '24', '25'], 2,
+                'Selisih berurutan 1, 2, 3, 4, 5, sehingga selisih berikutnya 6: 17 + 6 = 23.'),
+            _S('TIU', 'Persentase', 'Dari 400 pegawai, 35% adalah perempuan. Dari seluruh pegawai perempuan tersebut, 20% bergelar S2. Banyak pegawai perempuan bergelar S2 adalah...', ['24 orang', '28 orang', '32 orang', '35 orang', '40 orang'], 1,
+                'Perempuan = 35% × 400 = 140. Bergelar S2 = 20% × 140 = 28 orang.'),
+            _S('TIU', 'Pekerjaan', 'Andi dapat menyelesaikan suatu pekerjaan dalam 12 hari, Budi dalam 6 hari. Jika keduanya bekerja bersama, pekerjaan selesai dalam...', ['3 hari', '4 hari', '5 hari', '6 hari', '8 hari'], 1,
+                'Laju gabungan = 1/12 + 1/6 = 3/12 = 1/4 pekerjaan per hari, sehingga selesai dalam 4 hari.'),
+            _S('TIU', 'Jarak & Waktu', 'Dua kereta berangkat bersamaan dari dua kota yang berjarak 360 km, saling berhadapan, dengan kecepatan 80 km/jam dan 100 km/jam. Mereka bertemu setelah...', ['1,5 jam', '2 jam', '2,5 jam', '3 jam', '4 jam'], 1,
+                'Kecepatan relatif = 180 km/jam. Waktu bertemu = 360 ÷ 180 = 2 jam.'),
+            _S('TIU', 'Silogisme', 'Semua ASN adalah warga negara. Sebagian warga negara adalah pemilih. Kesimpulan yang tepat adalah...',
+                ['Sebagian ASN adalah pemilih', 'Semua ASN adalah pemilih', 'Semua warga negara adalah ASN', 'Tidak dapat ditarik kesimpulan pasti mengenai hubungan ASN dan pemilih', 'Tidak ada ASN yang menjadi pemilih'], 3,
+                'Premis tidak menjelaskan apakah pemilih tersebut termasuk ASN, sehingga tidak ada kesimpulan pasti tentang hubungan ASN dan pemilih.'),
+            _S('TIU', 'Penalaran Analitis', 'Lima pegawai (Andi, Budi, Citra, Dedi, Eka) duduk berderet dari kiri ke kanan. Andi di ujung kiri, Budi tepat di sebelah kanan Andi, Dedi di ujung kanan, dan Eka tepat di sebelah kiri Dedi. Siapa yang duduk di posisi tengah (ketiga)?', ['Andi', 'Budi', 'Citra', 'Dedi', 'Eka'], 2,
+                'Urutan: Andi, Budi, ?, Eka, Dedi. Satu-satunya orang tersisa untuk posisi ketiga adalah Citra.'),
+            // ---- TKP (12) ----
+            _K('Pelayanan Publik', 'Seorang warga meminta informasi yang bukan wewenang unit Anda. Tindakan Anda...',
+                ['Menjelaskan dengan sopan, mengarahkan ke unit berwenang, dan membantu menghubungkan bila memungkinkan', 'Menjelaskan dan menyebutkan unit yang berwenang', 'Menyatakan bahwa itu bukan wewenang Anda', 'Memberi informasi sebisanya berdasarkan dugaan', 'Meminta warga bertanya ke petugas lain tanpa arahan'],
+                'Skor 5: membantu tuntas dan memastikan warga tidak berputar-putar.', 0),
+            _K('Jejaring Kerja', 'Anda diminta mewakili instansi pada forum koordinasi lintas lembaga. Anda...',
+                ['Mempersiapkan materi, mengenali pihak terkait, dan menindaklanjuti hasil forum dengan laporan', 'Mempersiapkan materi dan mengikuti forum secara aktif', 'Menghadiri forum dan mencatat hasilnya', 'Mengirim rekan lain karena sibuk', 'Hadir tanpa persiapan'],
+                'Skor 5: persiapan matang dan tindak lanjut nyata.', 1),
+            _K('Sosial Budaya', 'Rekan baru dengan latar belakang suku dan agama berbeda tampak canggung di kantor. Anda...',
+                ['Mengajaknya berinteraksi, mengenalkannya ke tim, dan menciptakan suasana inklusif', 'Menyapa dan membantu bila ia membutuhkan', 'Menunggu ia mendekat lebih dahulu', 'Membiarkan karena belum akrab', 'Membicarakannya dengan rekan lain'],
+                'Skor 5: inklusif dan proaktif membangun kebersamaan.', 2),
+            _K('TIK', 'Anda menemukan celah keamanan pada sistem informasi kantor. Anda...',
+                ['Melaporkan ke bagian TI disertai bukti, tidak menyebarkannya, dan mengikuti penanganan', 'Melapor secara lisan ke atasan', 'Memperbaiki sendiri tanpa izin', 'Mendiamkan karena bukan tugas Anda', 'Membagikan temuan ke grup agar semua tahu'],
+                'Skor 5: pelaporan terkendali melalui jalur resmi.', 3),
+            _K('Profesionalisme', 'Aturan baru bertentangan dengan kebiasaan lama di unit Anda. Anda...',
+                ['Mempelajari aturan baru, mensosialisasikannya, dan membantu rekan beradaptasi', 'Mengikuti aturan baru', 'Menunggu instruksi tambahan', 'Tetap memakai kebiasaan lama karena sudah efektif', 'Menolak karena merepotkan'],
+                'Skor 5: adaptif dan membantu perubahan berjalan baik.', 4),
+            _K('Anti Radikalisme', 'Dalam rapat, seorang rekan mengejek kelompok agama tertentu sebagai candaan. Anda...',
+                ['Mengingatkan dengan sopan bahwa candaan tersebut tidak pantas dan mengalihkan topik rapat', 'Tidak tertawa dan menegurnya setelah rapat', 'Diam dan tidak menanggapi', 'Ikut tersenyum agar suasana tidak canggung', 'Ikut menimpali candaan'],
+                'Skor 5: menolak intoleransi secara langsung namun santun.', 0),
+            _K('Integritas', 'Anda menemukan kesalahan pencatatan anggaran yang Anda buat sendiri bulan lalu. Anda...',
+                ['Segera melaporkan ke atasan, memperbaiki catatan, dan mencegah pengulangan', 'Memperbaiki catatan lalu melapor sesudahnya', 'Memperbaiki diam-diam tanpa jejak', 'Menunggu sampai ada yang menyadari', 'Membiarkan karena selisihnya kecil'],
+                'Skor 5: jujur, akuntabel, dan korektif.', 1),
+            _K('Kerja Sama', 'Dua rekan Anda berselisih dan mengganggu kerja tim. Anda...',
+                ['Mempertemukan keduanya, memfasilitasi dialog, dan melibatkan atasan bila perlu', 'Menengahi dengan berbicara kepada masing-masing', 'Melapor kepada atasan', 'Memihak yang menurut Anda benar', 'Membiarkannya'],
+                'Skor 5: solutif dan menjaga keharmonisan tim.', 2),
+            _K('Kepemimpinan', 'Anda ditunjuk memimpin proyek singkat dengan anggota yang lebih senior. Anda...',
+                ['Menyampaikan tujuan, meminta masukan senior, dan membagi tugas berdasarkan kompetensi', 'Meminta senior mengarahkan jalannya proyek', 'Memimpin sendiri sesuai rencana awal', 'Meminta atasan menunjuk orang lain', 'Menghindari memberi arahan kepada senior'],
+                'Skor 5: kepemimpinan partisipatif dan menghargai keahlian anggota.', 3),
+            _K('Orientasi Pelayanan', 'Layanan unit Anda mendapat ulasan negatif di media sosial. Anda...',
+                ['Menanggapi dengan sopan, menelusuri masalahnya, dan memperbaiki prosedur layanan', 'Meminta maaf dan menawarkan solusi kepada pengulas', 'Melaporkan ke atasan', 'Mengabaikan karena belum tentu benar', 'Membalas dengan menyanggah keras'],
+                'Skor 5: responsif dan menjadikan kritik bahan perbaikan layanan.', 4),
+            _K('Manajemen Stres', 'Dua atasan memberi perintah yang saling bertentangan. Anda...',
+                ['Mengonfirmasi ke keduanya, menyampaikan adanya konflik instruksi, dan meminta kesepakatan prioritas', 'Meminta atasan langsung memutuskan', 'Mengerjakan perintah atasan yang jabatannya lebih tinggi', 'Mengerjakan keduanya sekaligus', 'Menunda keduanya'],
+                'Skor 5: komunikatif dan mencari kejelasan sebelum bertindak.', 0),
+            _K('Pengembangan Diri', 'Ada pelatihan di luar jam kerja yang bermanfaat untuk tugas Anda. Anda...',
+                ['Mengikuti, menerapkan ilmunya dalam tugas harian, dan membagikannya kepada rekan', 'Mengikuti pelatihan dengan sungguh-sungguh', 'Mengikuti bila tidak mengganggu waktu pribadi', 'Mengikuti hanya jika diwajibkan', 'Melewatkannya'],
+                'Skor 5: belajar berkelanjutan dan berbagi pengetahuan.', 1)
+        ]);
+
+        const BUILTIN_TRYOUTS = [
+            { id: 't1', order: 1, title: 'Tryout 1', duration: 100, requires: [], questions: BUILTIN_T1_QUESTIONS,
+              desc: 'Simulasi SKD standar BKN lengkap: 110 soal (30 TWK, 35 TIU, 45 TKP).' },
+            { id: 't2', order: 2, title: 'Tryout 2', duration: 30, requires: [], questions: BUILTIN_T2_QUESTIONS,
+              desc: 'Paket soal baru: 30 soal (8 TWK, 10 TIU, 12 TKP) dengan skor dinormalisasi ke skala BKN.' },
+            { id: 't3', order: 3, title: 'Tryout 3', duration: 30, requires: ['t1', 't2'], questions: BUILTIN_T3_QUESTIONS,
+              desc: 'Paket soal baru level lanjutan: 30 soal. Terbuka setelah Tryout 1 dan 2 diselesaikan.' }
+        ];
+
+        // =========================================================================
         // KONFIGURASI & STATE APLIKASI
         // =========================================================================
-        const STORAGE_KEY = "cat_cpns_skd_110_session_v2";
-        const TOTAL_QUESTIONS = questions.length; // 110 Soal
-        const EXAM_DURATION_SECONDS = 100 * 60; // 100 Menit (6000 detik)
+        let questions = BUILTIN_T1_QUESTIONS;   // diganti ketika peserta memilih tryout
+        let TOTAL_QUESTIONS = questions.length;
+        let EXAM_DURATION_SECONDS = 100 * 60;
+        let STORAGE_KEY = "cat_cpns_skd_session_v3";
 
         let state = {
-            participantName: "",
-            participantId: "",
-            currentIndex: 0,
+            participantName: "", participantId: "", tryoutId: "", currentIndex: 0,
             userAnswers: new Array(TOTAL_QUESTIONS).fill(null),
-            timeLeft: EXAM_DURATION_SECONDS,
-            isFinished: false,
-            finishReason: ""
+            timeLeft: EXAM_DURATION_SECONDS, isFinished: false, finishReason: "", recorded: false
         };
 
         let timerInterval = null;
@@ -1876,154 +2112,264 @@
         const autosaveBadge = document.getElementById('autosave-badge');
 
         // =========================================================================
-        // INISIALISASI & AUTO-SAVE (LOCALSTORAGE)
+        // INISIALISASI
         // =========================================================================
         window.addEventListener('DOMContentLoaded', () => {
-            checkSavedSession();
+            try { applyConfig(JSON.parse(localStorage.getItem(CONFIG_CACHE_KEY)) || {}); } catch (e) { applyConfig({}); }
+            profile = loadProfile();
+            if (profile) { showHome(); } else { showOnly('start-screen'); syncConfig(); }
         });
 
-        function saveStateToStorage() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                // Efek indikator tersimpan
-                const badge = document.getElementById('autosave-badge');
-                if (badge && !badge.classList.contains('hidden')) {
-                    badge.classList.add('border-emerald-500');
-                    setTimeout(() => badge.classList.remove('border-emerald-500'), 400);
-                }
-            } catch (e) {
-                console.warn("Gagal menyimpan ke localStorage:", e);
-            }
-        }
-
-        function checkSavedSession() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return;
-
-                const saved = JSON.parse(raw);
-                if (saved && saved.participantName && Array.isArray(saved.userAnswers) && saved.userAnswers.length === TOTAL_QUESTIONS) {
-                    const answeredCount = saved.userAnswers.filter(a => a !== null).length;
-                    const banner = document.getElementById('resume-banner');
-                    const info = document.getElementById('resume-info');
-
-                    if (saved.isFinished) {
-                        info.textContent = `Peserta: ${saved.participantName} | Status: Selesai (${answeredCount}/110 terjawab)`;
-                    } else {
-                        const mins = Math.floor(saved.timeLeft / 60);
-                        info.textContent = `Peserta: ${saved.participantName} | Terjawab: ${answeredCount}/110 soal | Sisa waktu: ${mins} menit`;
-                    }
-                    banner.classList.remove('hidden');
-                }
-            } catch (e) {
-                console.warn("Data sesi tersimpan tidak valid:", e);
-            }
-        }
-
-        function resumeSavedExam() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return;
-                state = JSON.parse(raw);
-
-                applyParticipantHeader();
-
-                if (state.isFinished) {
-                    renderResultScreen(state.finishReason || "Memulihkan hasil ujian terakhir.");
-                } else {
-                    enterQuizMode();
-                }
-            } catch (e) {
-                console.error("Gagal memulihkan sesi:", e);
-            }
-        }
-
-        function resetSavedData() {
-            localStorage.removeItem(STORAGE_KEY);
-            document.getElementById('resume-banner').classList.add('hidden');
-            document.getElementById('input-name').value = "";
-            document.getElementById('input-reg').value = "";
-        }
-
-        function startNewAttempt() {
-            clearInterval(timerInterval);
-            localStorage.removeItem(STORAGE_KEY);
-            state = {
-                participantName: "",
-                participantId: "",
-                currentIndex: 0,
-                userAnswers: new Array(TOTAL_QUESTIONS).fill(null),
-                timeLeft: EXAM_DURATION_SECONDS,
-                isFinished: false,
-                finishReason: ""
-            };
-
-            resultScreen.classList.add('hidden');
-            quizScreen.classList.add('hidden');
-            quizScreen.classList.remove('grid');
-            timerContainer.classList.add('hidden');
-            headerParticipant.classList.add('hidden');
-            autosaveBadge.classList.add('hidden');
-            document.getElementById('resume-banner').classList.add('hidden');
-            startScreen.classList.remove('hidden');
-        }
-
         // =========================================================================
-        // FORM PENDAFTARAN PESERTA & MULAI UJIAN
+        // PROFIL PESERTA, DAFTAR TRYOUT & SESI (localStorage per tryout)
         // =========================================================================
+        const PROFILE_KEY = "cat_cpns_profile_v1";
+        const CONFIG_CACHE_KEY = "cat_cpns_config_cache_v1";
+        let profile = null;
+        let tryouts = [];
+        let appSettings = { leaderboardPublic: true, topN: 50 };
+        let doneMap = {};
+        let currentTryout = null;
+        let syncNote = "";
+        const retryArmed = {};
+
+        function $(id) { return document.getElementById(id); }
+        function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36); }
+        function sessionKey(tid) { return "cat_cpns_session_v3_" + tid + "_" + hashStr(profile ? profile.name.toLowerCase() + "|" + profile.regId : "anon"); }
+        function sameParticipant(r) { return !!profile && r.name === profile.name && String(r.regId) === String(profile.regId); }
+        function loadProfile() { try { const p = JSON.parse(localStorage.getItem(PROFILE_KEY)); if (p && p.name) return p; } catch (e) {} return null; }
+
+        function newState() {
+            return { participantName: profile ? profile.name : "", participantId: profile ? profile.regId : "",
+                tryoutId: currentTryout ? currentTryout.id : "", currentIndex: 0,
+                userAnswers: new Array(TOTAL_QUESTIONS).fill(null), timeLeft: EXAM_DURATION_SECONDS,
+                isFinished: false, finishReason: "", recorded: false };
+        }
+
+        // ---------- Tryout registry ----------
+        function isValidQuestion(q) {
+            return !!q && ['TWK', 'TIU', 'TKP'].includes(q.category) && typeof q.question === 'string' && q.question.trim() &&
+                Array.isArray(q.options) && q.options.length === 5 &&
+                q.options.every(o => o && typeof o.text === 'string' && o.text.trim() && isFinite(Number(o.score)));
+        }
+        function sanitizeQuestions(arr) {
+            return (Array.isArray(arr) ? arr : []).filter(isValidQuestion).map((q, i) => ({
+                id: i + 1, category: q.category, subtopic: String(q.subtopic || q.category), question: String(q.question),
+                options: q.options.map(o => ({ text: String(o.text), score: Number(o.score) || 0 })), explanation: String(q.explanation || "") }));
+        }
+        function buildTryouts(cfg) {
+            cfg = cfg || {};
+            const ov = cfg.overrides || {};
+            const list = BUILTIN_TRYOUTS.map(b => Object.assign({}, b, ov[b.id] || {}, { id: b.id, questions: b.questions, builtin: true }));
+            (cfg.custom || []).forEach(c => {
+                const id = String(c.id || '').replace(/[^\w-]/g, '');
+                if (!id || list.some(x => x.id === id)) return;
+                list.push(Object.assign({}, c, { id, builtin: false, questions: sanitizeQuestions(c.questions) }));
+            });
+            list.forEach(t => {
+                t.requires = Array.isArray(t.requires) ? t.requires.map(x => String(x).replace(/[^\w-]/g, '')) : [];
+                t.duration = Number(t.duration) || 30;
+                t.active = t.active !== false;
+                t.order = Number(t.order) || 999;
+                t.title = String(t.title || t.id); t.desc = String(t.desc || "");
+            });
+            list.sort((a, b) => a.order - b.order);
+            return list;
+        }
+        function applyConfig(cfg) {
+            cfg = cfg || {};
+            appSettings = Object.assign({ leaderboardPublic: true, topN: 50 }, cfg.settings || {});
+            tryouts = buildTryouts(cfg);
+        }
+        function getTryout(id) { return tryouts.find(t => t.id === id) || null; }
+        function tryoutTitleById(id) { const t = getTryout(id); return t ? t.title : id; }
+        function tryoutStats(t) { const c = { TWK: 0, TIU: 0, TKP: 0 }; t.questions.forEach(q => c[q.category]++); return c; }
+
+        async function syncConfig() {
+            try {
+                const d = await apiGet('config');
+                if (!d || !d.ok) throw new Error((d && d.error) || 'Respons tidak valid');
+                try { localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(d)); } catch (e) {}
+                applyConfig(d);
+                syncNote = "Tersinkron dengan server";
+            } catch (e) {
+                syncNote = "Server tidak terjangkau (" + e.message + ") — memakai data tersimpan";
+            }
+            const n = $('home-sync'); if (n) n.textContent = syncNote;
+        }
+        async function syncMine() {
+            if (!profile) return;
+            try { const d = await apiGet('mine', { name: profile.name, regId: profile.regId }); if (d && d.ok) doneMap = d.done || {}; } catch (e) {}
+        }
+
+        // ---------- Status & kunci tryout ----------
+        function peekSession(tid) { try { const s = JSON.parse(localStorage.getItem(sessionKey(tid))); return s && Array.isArray(s.userAnswers) ? s : null; } catch (e) { return null; } }
+        function loadSession(tid) {
+            const t = getTryout(tid); const s = peekSession(tid);
+            return (t && s && s.userAnswers.length === t.questions.length) ? s : null;
+        }
+        function bestLocal(tid) {
+            return loadResults().filter(r => (r.tryoutId || 't1') === tid && sameParticipant(r)).sort((a, b) => b.total550 - a.total550)[0] || null;
+        }
+        function isCompleted(tid) {
+            if (doneMap[tid]) return true;
+            const s = peekSession(tid); if (s && s.isFinished) return true;
+            return !!bestLocal(tid);
+        }
+        function missingPrereqs(t) { return (t.requires || []).map(getTryout).filter(r => r && r.active && !isCompleted(r.id)); }
+
+        // ---------- Layar ----------
+        const ALL_SCREENS = ['start-screen', 'home-screen', 'quiz-screen', 'result-screen', 'admin-screen'];
+        function showOnly(id) {
+            ALL_SCREENS.forEach(s => $(s).classList.toggle('hidden', s !== id));
+            quizScreen.classList.toggle('grid', id === 'quiz-screen');
+            const inQuiz = id === 'quiz-screen';
+            timerContainer.classList.toggle('hidden', !inQuiz); timerContainer.classList.toggle('flex', inQuiz);
+            autosaveBadge.classList.toggle('hidden', !inQuiz); autosaveBadge.classList.toggle('flex', inQuiz);
+            const showP = !!profile && id !== 'start-screen' && id !== 'admin-screen';
+            headerParticipant.style.display = showP ? '' : 'none'; // kelas 'hidden md:flex' tetap menyembunyikannya di layar kecil
+            $('btn-admin').classList.toggle('hidden', inQuiz);
+            $('btn-home').classList.toggle('hidden', id !== 'result-screen');
+            window.scrollTo(0, 0);
+        }
+        function setHeaderIdentity(name, id) {
+            $('header-name').textContent = name; $('header-id').textContent = `No: ${id}`;
+            $('mobile-name').textContent = name; $('mobile-id').textContent = id;
+        }
+        function applyParticipantHeader() { setHeaderIdentity(state.participantName, state.participantId); }
+
         function generateParticipantId() {
-            const year = "26";
-            const randomDigits = Math.floor(100000000000 + Math.random() * 900000000000);
-            return `${year}${randomDigits}`;
+            return "26" + Math.floor(100000000000 + Math.random() * 900000000000);
         }
-
         function handleStartSubmit(e) {
             e.preventDefault();
-            const nameInput = document.getElementById('input-name').value.trim();
-            const regInput = document.getElementById('input-reg').value.trim();
-            const nameError = document.getElementById('name-error');
+            const nameInput = $('input-name').value.trim();
+            const regInput = $('input-reg').value.trim();
+            if (!nameInput) { $('name-error').classList.remove('hidden'); return; }
+            $('name-error').classList.add('hidden');
+            profile = { name: nameInput, regId: regInput || generateParticipantId() };
+            try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (err) {}
+            doneMap = {};
+            showHome();
+        }
+        function logoutParticipant() {
+            clearInterval(timerInterval);
+            try { localStorage.removeItem(PROFILE_KEY); } catch (e) {}
+            profile = null; doneMap = {};
+            $('input-name').value = ""; $('input-reg').value = "";
+            showOnly('start-screen');
+        }
+        function goHome() { clearInterval(timerInterval); showHome(); }
 
-            if (!nameInput) {
-                nameError.classList.remove('hidden');
+        async function showHome() {
+            clearInterval(timerInterval);
+            if (!profile) { showOnly('start-screen'); return; }
+            setHeaderIdentity(profile.name, profile.regId);
+            showOnly('home-screen');
+            $('home-greeting').textContent = 'Halo, ' + profile.name + '!';
+            $('home-reg').textContent = profile.regId;
+            updateHistoryBadge();
+            renderTryoutGrid(); fillBoardSelect(); loadHomeBoard();
+            await Promise.all([syncConfig(), syncMine()]);
+            if ($('home-screen').classList.contains('hidden')) return;
+            renderTryoutGrid(); fillBoardSelect(); loadHomeBoard();
+        }
+
+        function chip(text, cls) { return `<span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${cls}">${text}</span>`; }
+        function renderTryoutGrid() {
+            const grid = $('tryout-grid');
+            const list = tryouts.filter(t => t.active);
+            if (!list.length) { grid.innerHTML = '<p class="text-sm text-slate-500 col-span-full bg-white border border-slate-200 rounded-2xl p-6 text-center">Belum ada tryout aktif.</p>'; return; }
+            grid.innerHTML = list.map(t => {
+                const st = tryoutStats(t), miss = missingPrereqs(t), sess = peekSession(t.id);
+                const inProg = !!(sess && !sess.isFinished && sess.userAnswers.length === t.questions.length);
+                const finishedSess = !!(sess && sess.isFinished);
+                const done = isCompleted(t.id);
+                const best = bestLocal(t.id) || doneMap[t.id] || null;
+                const locked = miss.length > 0, empty = t.questions.length === 0;
+                let status = chip('Belum dikerjakan', 'bg-slate-100 text-slate-700');
+                if (locked) status = chip('🔒 Terkunci', 'bg-amber-100 text-amber-800');
+                else if (inProg) status = chip('Sedang dikerjakan', 'bg-blue-100 text-blue-800');
+                else if (done) status = chip('✓ Selesai', 'bg-emerald-100 text-emerald-800');
+                let info = `${t.questions.length} soal • ${t.duration} menit<br><span class="text-slate-500">TWK ${st.TWK} • TIU ${st.TIU} • TKP ${st.TKP}</span>`;
+                if (best) info += `<br><span class="font-semibold text-blue-700">Nilai terbaik: ${esc(best.total450)}/450</span>`;
+                if (inProg) info += `<br><span class="text-slate-500">Terjawab ${sess.userAnswers.filter(a => a !== null).length}/${t.questions.length} • sisa ${Math.floor(sess.timeLeft / 60)} menit</span>`;
+                let btns = '';
+                if (empty) btns = `<button disabled class="w-full py-2.5 rounded-xl bg-slate-200 text-slate-500 font-semibold text-sm cursor-not-allowed">Belum ada soal</button>`;
+                else if (locked) btns = `<button disabled class="w-full py-2.5 rounded-xl bg-slate-200 text-slate-500 font-semibold text-sm cursor-not-allowed">Terkunci</button>
+                    <p class="text-[11px] text-amber-700 mt-2">Selesaikan dahulu: ${miss.map(m => esc(m.title)).join(', ')}</p>`;
+                else if (inProg) btns = `<button onclick="startTryout('${t.id}')" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm">Lanjutkan</button>`;
+                else if (done) btns = `<div class="flex gap-2">${finishedSess ? `<button onclick="startTryout('${t.id}')" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-sm">Lihat Hasil</button>` : ''}
+                    <button onclick="retryTryout('${t.id}')" class="flex-1 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-sm">${retryArmed[t.id] ? 'Yakin ulangi?' : 'Ulangi'}</button></div>`;
+                else btns = `<button onclick="startTryout('${t.id}')" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm">Mulai Tryout</button>`;
+                return `<div class="bg-white rounded-2xl border ${locked ? 'border-slate-200 opacity-90' : 'border-slate-200 shadow-sm'} p-5 flex flex-col gap-3">
+                    <div class="flex justify-between items-start gap-2"><h4 class="font-extrabold text-slate-900 text-lg leading-tight">${esc(t.title)}</h4>${status}</div>
+                    <p class="text-xs text-slate-600 leading-relaxed flex-grow">${esc(t.desc)}</p>
+                    <div class="text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-xl p-3">${info}</div>
+                    <div>${btns}</div></div>`;
+            }).join('');
+        }
+
+        function retryTryout(id) {
+            if (!retryArmed[id]) {
+                retryArmed[id] = true; renderTryoutGrid();
+                setTimeout(() => { delete retryArmed[id]; if (!$('home-screen').classList.contains('hidden')) renderTryoutGrid(); }, 4000);
                 return;
             }
-            nameError.classList.add('hidden');
+            delete retryArmed[id];
+            startTryout(id, true);
+        }
 
-            state = {
-                participantName: nameInput,
-                participantId: regInput || generateParticipantId(),
-                currentIndex: 0,
-                userAnswers: new Array(TOTAL_QUESTIONS).fill(null),
-                timeLeft: EXAM_DURATION_SECONDS,
-                isFinished: false,
-                finishReason: ""
-            };
+        function selectTryout(t) {
+            currentTryout = t;
+            questions = t.questions;
+            TOTAL_QUESTIONS = questions.length;
+            EXAM_DURATION_SECONDS = t.duration * 60;
+            STORAGE_KEY = sessionKey(t.id);
+        }
 
+        function startTryout(tid, forceNew) {
+            const t = getTryout(tid);
+            if (!t || !profile || !t.questions.length) return;
+            if (missingPrereqs(t).length) { renderTryoutGrid(); return; }
+            selectTryout(t);
+            const sess = forceNew ? null : loadSession(t.id);
+            if (sess && sess.isFinished) { state = sess; applyParticipantHeader(); renderResultScreen(state.finishReason || "Hasil ujian terakhir."); return; }
+            if (sess) { state = sess; applyParticipantHeader(); enterQuizMode(); return; }
+            state = newState();
             saveStateToStorage();
             applyParticipantHeader();
             runIntro();
         }
 
-        function applyParticipantHeader() {
-            document.getElementById('header-name').textContent = state.participantName;
-            document.getElementById('header-id').textContent = `No: ${state.participantId}`;
-            document.getElementById('mobile-name').textContent = state.participantName;
-            document.getElementById('mobile-id').textContent = state.participantId;
+        function saveStateToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                const badge = $('autosave-badge');
+                if (badge && !badge.classList.contains('hidden')) {
+                    badge.classList.add('border-emerald-500');
+                    setTimeout(() => badge.classList.remove('border-emerald-500'), 400);
+                }
+            } catch (e) { console.warn("Gagal menyimpan ke localStorage:", e); }
+        }
+
+        function buildQuickNav() {
+            const colors = { TWK: 'bg-red-50 text-red-700 hover:bg-red-100 border-red-200', TIU: 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200', TKP: 'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200' };
+            $('quick-nav').innerHTML = ['TWK', 'TIU', 'TKP'].map(cat => {
+                const idx = questions.map((q, i) => q.category === cat ? i : -1).filter(i => i >= 0);
+                if (!idx.length) return '';
+                return `<button type="button" onclick="renderQuestion(${idx[0]})" class="py-1 px-2 rounded border ${colors[cat]}">${cat} (${idx[0] + 1}-${idx[idx.length - 1] + 1})</button>`;
+            }).join('');
         }
 
         function enterQuizMode() {
-            startScreen.classList.add('hidden');
-            resultScreen.classList.add('hidden');
-            quizScreen.classList.remove('hidden');
-            quizScreen.classList.add('grid');
-
-            headerParticipant.classList.remove('hidden');
-            headerParticipant.classList.add('flex');
-            autosaveBadge.classList.remove('hidden');
-            autosaveBadge.classList.add('flex');
-            timerContainer.classList.remove('hidden');
-            timerContainer.classList.add('flex');
-
+            showOnly('quiz-screen');
+            const st = tryoutStats({ questions });
+            $('header-sub').textContent = `${currentTryout ? currentTryout.title : 'Tryout'} • ${TOTAL_QUESTIONS} Soal • TWK (${st.TWK}) • TIU (${st.TIU}) • TKP (${st.TKP})`;
+            $('q-total').textContent = TOTAL_QUESTIONS;
+            $('nav-range').textContent = `1–${TOTAL_QUESTIONS}`;
+            $('nav-total').textContent = TOTAL_QUESTIONS;
+            buildQuickNav();
             initNavGrid();
             renderQuestion(state.currentIndex || 0);
             startTimer();
@@ -2048,7 +2394,7 @@
                     clearInterval(timerInterval);
                     state.timeLeft = 0;
                     closeFinishModal();
-                    finalizeAndScore("Waktu pengerjaan 100 menit telah habis.");
+                    finalizeAndScore("Waktu pengerjaan " + Math.round(EXAM_DURATION_SECONDS / 60) + " menit telah habis.");
                 }
             }, 1000);
         }
@@ -2231,36 +2577,31 @@
         }
 
         function renderResultScreen(reason) {
-            quizScreen.classList.add('hidden');
-            quizScreen.classList.remove('grid');
-            timerContainer.classList.add('hidden');
-            autosaveBadge.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
+            showOnly('result-screen');
+            setHeaderIdentity(state.participantName, state.participantId);
 
             document.getElementById('res-participant-name').textContent = state.participantName || "Peserta Simulasi";
             document.getElementById('res-participant-id').textContent = state.participantId || "-";
             document.getElementById('finish-reason').textContent = reason;
 
-            let twkScore = 0, tiuScore = 0, tkpScore = 0;
-
-            questions.forEach((q, idx) => {
-                const ansIdx = state.userAnswers[idx];
-                if (ansIdx !== null && q.options[ansIdx]) {
-                    const pts = q.options[ansIdx].score;
-                    if (q.category === 'TWK') twkScore += pts;
-                    else if (q.category === 'TIU') tiuScore += pts;
-                    else if (q.category === 'TKP') tkpScore += pts;
-                }
-            });
-
-            // Skor Kumulatif Asli BKN (Maksimal 550: TWK 150 + TIU 175 + TKP 225)
-            const totalBkn550 = twkScore + tiuScore + tkpScore;
-
-            // Konversi Proporsional Skala 450
-            const totalScale450 = Math.round((totalBkn550 / 550) * 450);
+            const sc = scoreAnswers(questions, state.userAnswers);
+            const twkScore = sc.twk, tiuScore = sc.tiu, tkpScore = sc.tkp;
+            const totalBkn550 = sc.total550, totalScale450 = sc.total450;
             const twkScale450 = ((twkScore / 550) * 450).toFixed(1);
             const tiuScale450 = ((tiuScore / 550) * 450).toFixed(1);
             const tkpScale450 = ((tkpScore / 550) * 450).toFixed(1);
+
+            const stt = tryoutStats({ questions });
+            document.getElementById('twk-title').textContent = `TWK (${stt.TWK} Soal)`;
+            document.getElementById('tiu-title').textContent = `TIU (${stt.TIU} Soal)`;
+            document.getElementById('tkp-title').textContent = `TKP (${stt.TKP} Soal)`;
+            document.getElementById('res-badge').textContent = 'HASIL ' + ((currentTryout && currentTryout.title) || 'SIMULASI CAT').toUpperCase();
+            ['rev-count-btn', 'rev-count-h', 'rev-count-all'].forEach(id => document.getElementById(id).textContent = TOTAL_QUESTIONS);
+            const nn = document.getElementById('norm-note');
+            if (TOTAL_QUESTIONS !== 110) {
+                nn.textContent = `Tryout ini berisi ${TOTAL_QUESTIONS} soal. Skor tiap subtes dinormalisasi ke skala BKN (TWK 150, TIU 175, TKP 225) agar nilai dan ambang batas tetap sebanding dengan SKD asli.`;
+                nn.classList.remove('hidden');
+            } else nn.classList.add('hidden');
 
             document.getElementById('total-score-450').textContent = totalScale450;
             document.getElementById('total-score-550').textContent = totalBkn550;
@@ -2499,7 +2840,7 @@
         }
 
             // =========================================================================
-        // RIWAYAT PESERTA & NILAI (TANPA DATABASE - localStorage + ekspor/impor)
+        // RIWAYAT NILAI PERANGKAT (localStorage) + PENGIRIMAN KE SERVER
         // =========================================================================
         // ==== ISI DENGAN URL APLIKASI WEB GOOGLE APPS SCRIPT (berakhiran /exec) ====
         const SERVER_URL = "https://script.google.com/macros/s/AKfycbxz3S7C-KEFE4r2x2LltwHjfw0t7AP05EUpv3xwZ8ZE8grWrMYkOaSe8b_dEoUlXLVu/exec";
@@ -2510,27 +2851,31 @@
         function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
         function fmtDate(t) { try { return new Date(t).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return ''; } }
 
-        function computeScores() {
-            let twk = 0, tiu = 0, tkp = 0;
-            questions.forEach((q, i) => {
-                const a = state.userAnswers[i];
-                if (a !== null && q.options[a]) {
-                    const p = q.options[a].score;
-                    if (q.category === 'TWK') twk += p; else if (q.category === 'TIU') tiu += p; else tkp += p;
-                }
+        // Skor tiap subtes dinormalisasi ke skala BKN (TWK 150 / TIU 175 / TKP 225)
+        function scoreAnswers(qs, answers) {
+            const raw = { TWK: 0, TIU: 0, TKP: 0 }, max = { TWK: 0, TIU: 0, TKP: 0 };
+            qs.forEach((q, i) => {
+                max[q.category] += 5;
+                const a = answers[i];
+                if (a !== null && a !== undefined && q.options[a]) raw[q.category] += Number(q.options[a].score) || 0;
             });
-            return { twk, tiu, tkp };
+            const norm = (c, m) => max[c] ? Math.round(raw[c] / max[c] * m) : 0;
+            const twk = norm('TWK', 150), tiu = norm('TIU', 175), tkp = norm('TKP', 225);
+            const total550 = twk + tiu + tkp;
+            return { twk, tiu, tkp, total550, total450: Math.round(total550 / 550 * 450), raw, max };
         }
+        function computeScores() { const r = scoreAnswers(questions, state.userAnswers); return { twk: r.twk, tiu: r.tiu, tkp: r.tkp }; }
 
         function recordResult(reason) {
             if (state.recorded) return;
-            const s = computeScores();
-            const total = s.twk + s.tiu + s.tkp;
+            const sc = scoreAnswers(questions, state.userAnswers);
             const rec = {
                 id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                tryoutId: state.tryoutId || (currentTryout ? currentTryout.id : 't1'),
+                tryoutTitle: currentTryout ? currentTryout.title : '',
                 name: state.participantName, regId: state.participantId, finishedAt: Date.now(),
-                twk: s.twk, tiu: s.tiu, tkp: s.tkp, total550: total, total450: Math.round(total / 550 * 450),
-                pass: s.twk >= 65 && s.tiu >= 80 && s.tkp >= 166,
+                twk: sc.twk, tiu: sc.tiu, tkp: sc.tkp, total550: sc.total550, total450: sc.total450,
+                pass: sc.twk >= 65 && sc.tiu >= 80 && sc.tkp >= 166,
                 answered: state.userAnswers.filter(a => a !== null).length, reason: reason || ""
             };
             const all = loadResults(); all.push(rec); saveResults(all);
@@ -2540,8 +2885,8 @@
         }
 
         function updateHistoryBadge() {
-            const el = document.getElementById('hist-count');
-            if (el) el.textContent = loadResults().length;
+            const n = loadResults().length;
+            ['hist-count', 'hist-count-home'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = n; });
         }
         window.addEventListener('DOMContentLoaded', updateHistoryBadge);
 
@@ -2573,6 +2918,7 @@
                     <td class="pr-2 font-semibold text-slate-900">${esc(r.name)}</td>
                     <td class="pr-2 font-mono text-slate-600">${esc(r.regId)}</td>
                     <td class="pr-2 text-slate-600 whitespace-nowrap">${esc(fmtDate(r.finishedAt))}</td>
+                    <td class="pr-2 text-slate-600">${esc(tryoutTitleById(r.tryoutId || 't1'))}</td>
                     <td class="pr-2 ${r.twk >= 65 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.twk)}</td>
                     <td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.tiu)}</td>
                     <td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.tkp)}</td>
@@ -2619,25 +2965,69 @@
         // =========================================================================
         let lastBoard = [];
         let lastBoardSource = "";
+        let boardReqSeq = 0, homeBoardSeq = 0;
 
         function loadOutbox() { try { const a = JSON.parse(localStorage.getItem(OUTBOX_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
         function saveOutbox(a) { try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(a)); } catch (e) {} }
 
-        async function sendRecord(rec) {
-            // no-cors + text/plain: menghindari preflight CORS pada Apps Script
-            await fetch(SERVER_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(rec) });
-        }
-        async function flushOutbox() {
-            if (!SERVER_URL) return;
-            let box = loadOutbox();
-            for (const rec of box.slice()) {
-                try {
-                    await sendRecord(rec);
-                    box = loadOutbox().filter(r => r.id !== rec.id);
-                    saveOutbox(box);
-                } catch (e) { break; }
+        // ---------- Klien API Apps Script ----------
+        function parseApiText(txt) {
+            try { return JSON.parse(txt); }
+            catch (e) {
+                throw new Error(/<html|<!doctype/i.test(txt)
+                    ? 'server mengembalikan halaman HTML — cek Deploy: "Execute as: Me", "Who has access: Anyone", dan pakai URL berakhiran /exec'
+                    : 'respons server bukan JSON');
             }
         }
+        function jsonp(params) {
+            return new Promise((resolve, reject) => {
+                const cb = 'cb_' + Math.random().toString(36).slice(2);
+                const s = document.createElement('script');
+                const timer = setTimeout(() => { cleanup(); reject(new Error('waktu habis')); }, 15000);
+                function cleanup() { clearTimeout(timer); delete window[cb]; s.remove(); }
+                window[cb] = d => { cleanup(); resolve(d); };
+                s.onerror = () => { cleanup(); reject(new Error('gagal memuat dari server (cek deploy & akses "Anyone")')); };
+                s.src = SERVER_URL + '?' + new URLSearchParams(Object.assign({}, params, { callback: cb, _: Date.now() })).toString();
+                document.body.appendChild(s);
+            });
+        }
+        async function apiGet(action, params) {
+            if (!SERVER_URL) throw new Error('SERVER_URL belum diisi');
+            const p = Object.assign({ action }, params || {});
+            try {
+                const res = await fetch(SERVER_URL + '?' + new URLSearchParams(Object.assign({}, p, { _: Date.now() })).toString());
+                return parseApiText(await res.text());
+            } catch (e) {
+                if (e instanceof TypeError) return await jsonp(p); // cadangan bila fetch/CORS diblokir
+                throw e;
+            }
+        }
+        async function apiPost(action, body) {
+            if (!SERVER_URL) throw new Error('SERVER_URL belum diisi');
+            // text/plain = "simple request" (tanpa preflight CORS) dan responsnya tetap bisa dibaca
+            const res = await fetch(SERVER_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(Object.assign({ action }, body || {})) });
+            return parseApiText(await res.text());
+        }
+
+        // ---------- Pengiriman nilai (dengan antrean offline) ----------
+        async function submitRecord(rec) {
+            try {
+                const d = await apiPost('submit', { record: rec });
+                if (d && d.ok) return true;
+            } catch (e) {}
+            try { const d2 = await apiGet('submit', { data: JSON.stringify(rec) }); return !!(d2 && d2.ok); } catch (e) { return false; }
+        }
+        async function doFlush() {
+            if (!SERVER_URL) return;
+            for (const rec of loadOutbox().slice()) {
+                const ok = await submitRecord(rec);
+                if (!ok) break;
+                saveOutbox(loadOutbox().filter(r => r.id !== rec.id));
+            }
+        }
+        let flushChain = Promise.resolve();
+        function flushOutbox() { flushChain = flushChain.then(doFlush).catch(() => {}); return flushChain; }
         function enqueueAndFlush(rec) {
             if (!SERVER_URL) return Promise.resolve();
             const box = loadOutbox();
@@ -2648,48 +3038,50 @@
         window.addEventListener('DOMContentLoaded', flushOutbox);
 
         function currentRecordId() {
-            const mine = loadResults().filter(r => r.regId === state.participantId && r.name === state.participantName);
+            const mine = loadResults().filter(r => (r.tryoutId || 't1') === state.tryoutId && r.regId === state.participantId && r.name === state.participantName);
             return mine.length ? mine[mine.length - 1].id : null;
         }
 
-        async function loadLeaderboard() {
-            const status = document.getElementById('lb-status');
-            status.textContent = 'Memuat papan nilai...';
-            let rows = null;
+        // ---------- Leaderboard ----------
+        function bestPerParticipant(rows) {
+            const best = {};
+            rows.forEach(r => {
+                const k = (r.name || '').toLowerCase() + '|' + (r.regId || '');
+                if (!best[k] || r.total550 > best[k].total550 || (r.total550 === best[k].total550 && r.finishedAt < best[k].finishedAt)) best[k] = r;
+            });
+            return Object.values(best);
+        }
+        async function fetchBoard(tid) {
+            let err = '';
             if (SERVER_URL) {
                 try {
-                    if (window.submitPromise) { await window.submitPromise; await new Promise(r => setTimeout(r, 1500)); }
-                    await flushOutbox();
-                    const res = await fetch(SERVER_URL + (SERVER_URL.includes('?') ? '&' : '?') + 'action=leaderboard&_=' + Date.now());
-                    const data = await res.json();
-                    if (data && Array.isArray(data.rows)) {
-                        rows = data.rows;
-                        lastBoardSource = `Server Google Sheets • ${data.total} peserta`;
+                    const params = { tryout: tid };
+                    if (profile) { params.name = profile.name; params.regId = profile.regId; }
+                    const d = await apiGet('leaderboard', params);
+                    if (d && d.hidden) return { rows: [], source: 'Leaderboard sedang disembunyikan oleh admin.' };
+                    if (d && (d.ok || Array.isArray(d.rows))) {
+                        const total = d.total != null ? d.total : (d.rows || []).length;
+                        return { rows: d.rows || [], source: `Server Google Sheets • ${total} peserta` + (d.attempts ? ` • ${d.attempts} percobaan` : '') };
                     }
-                } catch (e) { console.warn('Gagal memuat papan nilai server:', e); }
+                    throw new Error((d && d.error) || 'respons tidak dikenal');
+                } catch (e) { err = e.message; console.warn('Gagal memuat papan nilai server:', e); }
             }
-            if (!rows) {
-                rows = loadResults().slice().sort((a, b) => (b.total550 - a.total550) || (a.finishedAt - b.finishedAt));
-                lastBoardSource = SERVER_URL
-                    ? `Server tidak terjangkau — menampilkan data perangkat ini saja • ${rows.length} peserta`
-                    : `Server belum diatur (SERVER_URL kosong) — menampilkan data perangkat ini saja • ${rows.length} peserta`;
-            }
-            lastBoard = rows;
-            renderLeaderboard();
+            let rows = loadResults().filter(r => (r.tryoutId || 't1') === tid);
+            rows = bestPerParticipant(rows).sort((a, b) => (b.total550 - a.total550) || (a.finishedAt - b.finishedAt))
+                .map(r => Object.assign({}, r, { me: sameParticipant(r) }));
+            return { rows, source: (SERVER_URL ? `Server tidak terjangkau (${err}) — ` : 'SERVER_URL belum diatur — ') + `menampilkan data perangkat ini saja • ${rows.length} peserta` };
         }
 
-        function renderLeaderboard() {
-            const myId = currentRecordId();
-            const body = document.getElementById('lb-body');
+        function renderBoardRows(body, rows) {
             body.innerHTML = '';
-            lastBoard.forEach((r, i) => {
-                const mine = myId && r.id === myId;
+            rows.forEach((r, i) => {
+                const rank = r.rank || (i + 1);
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-slate-100 ' + (mine ? 'bg-amber-50 font-bold' : 'hover:bg-slate-50');
-                const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+                tr.className = 'border-b border-slate-100 ' + (r.me ? 'bg-amber-50 font-bold' : 'hover:bg-slate-50');
+                const medal = rank === 1 ? '🥇 ' : rank === 2 ? '🥈 ' : rank === 3 ? '🥉 ' : '';
                 tr.innerHTML = `
-                    <td class="py-2 pr-2 font-bold text-slate-600">${medal}${i + 1}</td>
-                    <td class="pr-2 text-slate-900">${esc(r.name)}${mine ? ' <span class="text-[10px] text-amber-700">(Anda)</span>' : ''}</td>
+                    <td class="py-2 pr-2 font-bold text-slate-600">${medal}${rank}</td>
+                    <td class="pr-2 text-slate-900">${esc(r.name)}${r.me ? ' <span class="text-[10px] text-amber-700">(Anda)</span>' : ''}</td>
                     <td class="pr-2 ${r.twk >= 65 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.twk)}</td>
                     <td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tiu)}</td>
                     <td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tkp)}</td>
@@ -2698,8 +3090,39 @@
                     <td><span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${r.pass ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.pass ? 'MEMENUHI PG' : 'TIDAK MEMENUHI PG'}</span></td>`;
                 body.appendChild(tr);
             });
-            if (!lastBoard.length) body.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-500">Belum ada data nilai.</td></tr>';
-            document.getElementById('lb-status').textContent = lastBoardSource;
+            if (!rows.length) body.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-500">Belum ada data nilai.</td></tr>';
+        }
+
+        // Leaderboard pada layar hasil
+        async function loadLeaderboard() {
+            const my = ++boardReqSeq;
+            $('lb-status').textContent = 'Memuat papan nilai...';
+            if (window.submitPromise) { try { await window.submitPromise; } catch (e) {} }
+            await flushOutbox();
+            const res = await fetchBoard(state.tryoutId || 't1');
+            if (my !== boardReqSeq) return;
+            lastBoard = res.rows;
+            lastBoardSource = res.source + (loadOutbox().length ? ' • nilai Anda belum terkirim ke server (akan dicoba lagi otomatis)' : '');
+            renderBoardRows($('lb-body'), lastBoard);
+            $('lb-status').textContent = (currentTryout ? currentTryout.title + ' • ' : '') + lastBoardSource;
+        }
+
+        // Leaderboard pada beranda
+        function fillBoardSelect() {
+            const sel = $('hlb-select'); const prev = sel.value;
+            const list = tryouts.filter(t => t.active);
+            sel.innerHTML = list.map(t => `<option value="${esc(t.id)}">${esc(t.title)}</option>`).join('');
+            if (list.some(t => t.id === prev)) sel.value = prev;
+        }
+        async function loadHomeBoard() {
+            const tid = $('hlb-select').value;
+            if (!tid) { $('hlb-body').innerHTML = ''; $('hlb-status').textContent = 'Belum ada tryout aktif.'; return; }
+            const my = ++homeBoardSeq;
+            $('hlb-status').textContent = 'Memuat...';
+            const res = await fetchBoard(tid);
+            if (my !== homeBoardSeq) return;
+            renderBoardRows($('hlb-body'), res.rows);
+            $('hlb-status').textContent = res.source;
         }
 
         // =========================================================================
@@ -2708,9 +3131,9 @@
         function buildReportHtml() {
             const g = id => document.getElementById(id).textContent;
             const myId = currentRecordId();
-            const rows = lastBoard.map((r, i) => `<tr class="${myId && r.id === myId ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.twk)}</td><td>${esc(r.tiu)}</td><td>${esc(r.tkp)}</td><td>${esc(r.total550)}</td><td>${esc(r.total450)}</td><td>${r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG'}</td></tr>`).join('');
+            const rows = lastBoard.map((r, i) => `<tr class="${r.me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.twk)}</td><td>${esc(r.tiu)}</td><td>${esc(r.tkp)}</td><td>${esc(r.total550)}</td><td>${esc(r.total450)}</td><td>${r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG'}</td></tr>`).join('');
             return `
-                <h1>Hasil Simulasi CAT SKD CPNS</h1>
+                <h1>Hasil ${esc(currentTryout ? currentTryout.title : 'Simulasi')} — CAT SKD CPNS</h1>
                 <div>${esc(g('res-participant-name'))} &bull; No. Peserta: ${esc(g('res-participant-id'))} &bull; ${esc(fmtDate(Date.now()))}</div>
                 <div style="margin-top:4px"><strong>${esc(g('overall-status-badge'))}</strong></div>
                 <h2>Rekap Nilai</h2>
@@ -2758,8 +3181,8 @@
         }
         function exportCSV() {
             const all = loadResults().sort((a, b) => (b.total550 - a.total550) || (b.finishedAt - a.finishedAt));
-            const head = ['Peringkat', 'Nama', 'No Peserta', 'Selesai', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Nilai (450)', 'Status', 'Terjawab'];
-            const rows = all.map((r, i) => [i + 1, r.name, r.regId, fmtDate(r.finishedAt), r.twk, r.tiu, r.tkp, r.total550, r.total450, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
+            const head = ['Peringkat', 'Nama', 'No Peserta', 'Selesai', 'Tryout', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Nilai (450)', 'Status', 'Terjawab'];
+            const rows = all.map((r, i) => [i + 1, r.name, r.regId, fmtDate(r.finishedAt), tryoutTitleById(r.tryoutId || 't1'), r.twk, r.tiu, r.tkp, r.total550, r.total450, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
             const csv = '\uFEFF' + [head, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
             downloadFile('riwayat-peserta-cat-skd.csv', 'text/csv;charset=utf-8', csv);
         }
@@ -2781,7 +3204,7 @@
                         const id = (typeof r.id === 'string' && /^[\w-]+$/.test(r.id)) ? r.id : 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
                         if (ids.has(id)) return;
                         const n = v => Math.max(0, Number(v) || 0);
-                        cur.push({ id, name: r.name.slice(0, 120), regId: String(r.regId || '').slice(0, 40), finishedAt: n(r.finishedAt) || Date.now(),
+                        cur.push({ id, tryoutId: String(r.tryoutId || 't1').replace(/[^\w-]/g, '').slice(0, 40) || 't1', name: r.name.slice(0, 120), regId: String(r.regId || '').slice(0, 40), finishedAt: n(r.finishedAt) || Date.now(),
                             twk: n(r.twk), tiu: n(r.tiu), tkp: n(r.tkp), total550: n(r.total550), total450: n(r.total450),
                             pass: !!r.pass, answered: n(r.answered), reason: '' });
                         ids.add(id); added++;
@@ -2792,6 +3215,447 @@
                 input.value = '';
             };
             reader.readAsText(f);
+        }
+
+        // =========================================================================
+        // MODE ADMIN (password diverifikasi server; semua perubahan disimpan ke Google Sheets)
+        // =========================================================================
+        const ADMIN_TOKEN_KEY = "cat_admin_token_v1";
+        let adminToken = "";
+        try { adminToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || ""; } catch (e) {}
+        const adm = { tab: 'tryout', tryouts: [], settings: { leaderboardPublic: true, topN: 50 }, results: null, form: null,
+            qTid: null, qDraft: [], qDirty: false, qForm: null, resTid: '', resQuery: '', msg: '', msgErr: false, armed: null };
+        const ADMIN_TABS = [['tryout', 'Tryout'], ['soal', 'Soal'], ['nilai', 'Nilai Peserta'], ['statistik', 'Statistik'], ['pengaturan', 'Pengaturan']];
+        const BTN = 'px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50';
+        const BTN_PRIMARY = 'px-4 py-2 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white';
+        const BTN_DANGER = 'px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-200 text-red-600 hover:bg-red-50';
+        const INPUT = 'w-full px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-blue-600';
+
+        function openAdminLogin() {
+            if (adminToken) { enterAdmin(); return; }
+            $('admin-login-error').classList.add('hidden');
+            const m = $('admin-login-modal'); m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => $('admin-pwd').focus(), 50);
+        }
+        function closeAdminLogin() { const m = $('admin-login-modal'); m.classList.add('hidden'); m.classList.remove('flex'); $('admin-pwd').value = ''; }
+        async function adminLoginSubmit(e) {
+            e.preventDefault();
+            const btn = $('admin-login-btn'), err = $('admin-login-error');
+            btn.disabled = true; btn.textContent = 'Memeriksa...'; err.classList.add('hidden');
+            try {
+                const d = await apiPost('adminLogin', { pwd: $('admin-pwd').value });
+                if (d && d.ok && d.token) {
+                    adminToken = d.token; try { sessionStorage.setItem(ADMIN_TOKEN_KEY, adminToken); } catch (x) {}
+                    closeAdminLogin(); enterAdmin();
+                } else { err.textContent = (d && d.error) || 'Login gagal'; err.classList.remove('hidden'); }
+            } catch (x) { err.textContent = 'Tidak dapat menghubungi server: ' + x.message; err.classList.remove('hidden'); }
+            btn.disabled = false; btn.textContent = 'Masuk';
+        }
+        function adminExit() {
+            adminToken = ''; try { sessionStorage.removeItem(ADMIN_TOKEN_KEY); } catch (e) {}
+            adm.results = null; adm.form = null; adm.qForm = null; adm.qTid = null; adm.qDirty = false;
+            if (profile) showHome(); else showOnly('start-screen');
+        }
+        async function adminCall(action, body) {
+            const d = await apiPost(action, Object.assign({ token: adminToken }, body || {}));
+            if (d && d.error === 'unauthorized') { adminExit(); throw new Error('Sesi admin berakhir, silakan masuk lagi.'); }
+            if (!d || !d.ok) throw new Error((d && d.error) || 'Permintaan gagal');
+            return d;
+        }
+        async function enterAdmin() {
+            showOnly('admin-screen');
+            $('admin-status').textContent = 'Memuat data...';
+            renderAdminTabs();
+            $('admin-content').innerHTML = '<p class="text-sm text-slate-500">Memuat...</p>';
+            await adminReload();
+        }
+        async function adminReload() {
+            try {
+                const d = await adminCall('adminConfig');
+                adm.tryouts = buildTryouts(d);
+                adm.settings = Object.assign({ leaderboardPublic: true, topN: 50 }, d.settings || {});
+                $('admin-status').textContent = 'Terhubung ke server • ' + adm.tryouts.length + ' tryout';
+            } catch (e) { $('admin-status').textContent = 'Gagal memuat: ' + e.message; adm.msg = e.message; adm.msgErr = true; }
+            renderAdmin();
+        }
+        function renderAdminTabs() {
+            $('admin-tabs').innerHTML = ADMIN_TABS.map(([k, l]) => `<button type="button" onclick="adminTab('${k}')" class="px-4 py-2 rounded-xl text-sm font-semibold ${adm.tab === k ? 'bg-blue-600 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'}">${l}</button>`).join('');
+        }
+        async function adminTab(k) {
+            adm.tab = k; adm.msg = ''; adm.armed = null; renderAdminTabs();
+            if ((k === 'nilai' || k === 'statistik') && !adm.results) await loadAdminResults();
+            renderAdmin();
+        }
+        async function loadAdminResults() {
+            $('admin-content').innerHTML = '<p class="text-sm text-slate-500">Memuat data nilai...</p>';
+            try { adm.results = (await adminCall('adminResults')).rows || []; } catch (e) { adm.results = []; adm.msg = e.message; adm.msgErr = true; }
+        }
+        function admMsg(m, err) { adm.msg = m; adm.msgErr = !!err; renderAdmin(); }
+        function admConfirm(key) {
+            if (adm.armed === key) { adm.armed = null; return true; }
+            adm.armed = key; renderAdmin();
+            setTimeout(() => { if (adm.armed === key) { adm.armed = null; if (adm.tab) renderAdmin(); } }, 4000);
+            return false;
+        }
+        function renderAdmin() {
+            renderAdminTabs();
+            const fn = { tryout: admTryoutHtml, soal: admSoalHtml, nilai: admNilaiHtml, statistik: admStatHtml, pengaturan: admSettingsHtml }[adm.tab];
+            const msg = adm.msg ? `<div class="mb-4 text-sm px-4 py-2.5 rounded-xl border ${adm.msgErr ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}">${esc(adm.msg)}</div>` : '';
+            $('admin-content').innerHTML = msg + fn();
+            if (adm.tab === 'soal') qfToggle();
+        }
+        function admGet(id) { return adm.tryouts.find(t => t.id === id) || null; }
+        function admTitle(id) { const t = admGet(id); return t ? t.title : id; }
+        function metaOf(t) { return { id: t.id, builtin: !!t.builtin, title: t.title, desc: t.desc, duration: t.duration, order: t.order, requires: t.requires, active: t.active }; }
+
+        // ------------------------------- TAB TRYOUT -------------------------------
+        function admTryoutHtml() {
+            const rows = adm.tryouts.map(t => {
+                const st = tryoutStats(t);
+                const req = (t.requires || []).map(admTitle).map(esc).join(', ') || '—';
+                return `<tr class="border-b border-slate-100 align-top">
+                    <td class="py-2.5 pr-2 font-bold text-slate-500">${esc(t.order)}</td>
+                    <td class="pr-3"><div class="font-semibold text-slate-900">${esc(t.title)}</div><div class="text-[11px] text-slate-500 font-mono">${esc(t.id)} • ${t.builtin ? 'bawaan' : 'kustom'}</div></td>
+                    <td class="pr-3 whitespace-nowrap">${t.questions.length} <span class="text-[11px] text-slate-500">(${st.TWK}/${st.TIU}/${st.TKP})</span></td>
+                    <td class="pr-3 whitespace-nowrap">${esc(t.duration)} mnt</td>
+                    <td class="pr-3 text-xs">${req}</td>
+                    <td class="pr-3">${chip(t.active ? 'Aktif' : 'Disembunyikan', t.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600')}</td>
+                    <td class="text-right"><div class="flex flex-wrap gap-1.5 justify-end">
+                        <button class="${BTN}" onclick="admEditTryout('${t.id}')">Edit</button>
+                        <button class="${BTN}" onclick="admToggleTryout('${t.id}')">${t.active ? 'Sembunyikan' : 'Aktifkan'}</button>
+                        <button class="${BTN}" onclick="admDuplicate('${t.id}')">Duplikat</button>
+                        <button class="${BTN_DANGER}" onclick="admDeleteTryout('${t.id}')">${adm.armed === 'del:' + t.id ? 'Yakin?' : (t.builtin ? 'Reset' : 'Hapus')}</button>
+                    </div></td></tr>`;
+            }).join('');
+            return `<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                    <div><h3 class="text-lg font-extrabold text-slate-900">Daftar Tryout</h3>
+                    <p class="text-xs text-slate-500">Atur judul, durasi, urutan, dan <b>prasyarat</b> (tryout yang harus diselesaikan peserta sebelum tryout ini terbuka).</p></div>
+                    <button class="${BTN_PRIMARY}" onclick="admNewTryout()">+ Tambah Tryout</button></div>
+                ${adm.form ? admTryoutFormHtml() : ''}
+                <div class="overflow-x-auto"><table class="w-full text-xs sm:text-sm text-left">
+                    <thead class="text-slate-600 border-b border-slate-200"><tr><th class="py-2 pr-2">Urut</th><th class="pr-3">Tryout</th><th class="pr-3">Soal</th><th class="pr-3">Durasi</th><th class="pr-3">Prasyarat</th><th class="pr-3">Status</th><th></th></tr></thead>
+                    <tbody>${rows}</tbody></table></div>
+                <p class="text-[11px] text-slate-500 mt-3">Angka soal: total (TWK/TIU/TKP). Tryout bawaan hanya bisa diubah pengaturannya; untuk mengubah isi soal gunakan <b>Duplikat</b> lalu edit salinannya di tab Soal.</p>`;
+        }
+        function admTryoutFormHtml() {
+            const f = adm.form;
+            const others = adm.tryouts.filter(t => t.id !== f.id);
+            return `<div class="border border-blue-200 bg-blue-50/50 rounded-2xl p-4 mb-5 space-y-3">
+                <h4 class="font-bold text-slate-900">${f.isNew ? 'Tryout Baru' : 'Edit: ' + esc(f.id)}</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div><label class="text-xs font-semibold text-slate-600">Judul</label><input id="tf-title" class="${INPUT}" maxlength="80" value="${esc(f.title)}"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="text-xs font-semibold text-slate-600">Durasi (menit)</label><input id="tf-duration" type="number" min="1" max="300" class="${INPUT}" value="${esc(f.duration)}"></div>
+                        <div><label class="text-xs font-semibold text-slate-600">Urutan</label><input id="tf-order" type="number" class="${INPUT}" value="${esc(f.order)}"></div>
+                    </div>
+                </div>
+                <div><label class="text-xs font-semibold text-slate-600">Deskripsi</label><textarea id="tf-desc" rows="2" maxlength="300" class="${INPUT}">${esc(f.desc)}</textarea></div>
+                <div><label class="text-xs font-semibold text-slate-600 block mb-1">Prasyarat (tryout yang harus selesai lebih dulu)</label>
+                    <div class="flex flex-wrap gap-3">${others.map(o => `<label class="flex items-center gap-1.5 text-sm"><input type="checkbox" class="tf-req" value="${esc(o.id)}" ${f.requires.includes(o.id) ? 'checked' : ''}> ${esc(o.title)}</label>`).join('') || '<span class="text-xs text-slate-500">Belum ada tryout lain.</span>'}</div></div>
+                <label class="flex items-center gap-2 text-sm"><input id="tf-active" type="checkbox" ${f.active ? 'checked' : ''}> Aktif (tampil di beranda peserta)</label>
+                <div class="flex gap-2"><button class="${BTN_PRIMARY}" onclick="admSaveTryout()">Simpan Tryout</button><button class="${BTN}" onclick="admCancelForm()">Batal</button></div></div>`;
+        }
+        function admNewTryout() {
+            const n = adm.tryouts.length + 1;
+            adm.form = { id: 'c' + Date.now().toString(36), isNew: true, builtin: false, title: 'Tryout ' + n, desc: '', duration: 30,
+                order: Math.max(0, ...adm.tryouts.map(t => t.order === 999 ? 0 : t.order)) + 1, requires: [], active: true };
+            adm.msg = ''; renderAdmin();
+        }
+        function admEditTryout(id) {
+            const t = admGet(id); if (!t) return;
+            adm.form = { id: t.id, isNew: false, builtin: t.builtin, title: t.title, desc: t.desc, duration: t.duration, order: t.order, requires: (t.requires || []).slice(), active: t.active };
+            adm.msg = ''; renderAdmin();
+        }
+        function admCancelForm() { adm.form = null; renderAdmin(); }
+        function hasCycle(id, requires) {
+            const map = {}; adm.tryouts.forEach(t => map[t.id] = t.requires || []); map[id] = requires;
+            const seen = new Set();
+            const walk = x => { if (x === id && seen.size) return true; if (seen.has(x)) return false; seen.add(x); return (map[x] || []).some(walk); };
+            return (requires || []).some(walk);
+        }
+        async function admSaveTryout() {
+            const f = adm.form;
+            const t = { id: f.id, builtin: f.builtin, title: $('tf-title').value.trim(), desc: $('tf-desc').value.trim(),
+                duration: Number($('tf-duration').value) || 30, order: Number($('tf-order').value) || 1, active: $('tf-active').checked,
+                requires: [...document.querySelectorAll('.tf-req:checked')].map(x => x.value) };
+            if (!t.title) { admMsg('Judul wajib diisi.', true); return; }
+            if (hasCycle(t.id, t.requires)) { admMsg('Prasyarat saling mengunci (melingkar). Ubah prasyarat agar tidak saling bergantung.', true); return; }
+            if (f.isNew) t.questions = [];
+            try { await adminCall('saveTryout', { tryout: t }); adm.form = null; await adminReload(); admMsg('Tryout tersimpan.'); }
+            catch (e) { admMsg(e.message, true); }
+        }
+        async function admToggleTryout(id) {
+            const t = admGet(id); if (!t) return;
+            try { await adminCall('saveTryout', { tryout: Object.assign(metaOf(t), { active: !t.active }) }); await adminReload(); admMsg(`"${t.title}" ${t.active ? 'disembunyikan' : 'diaktifkan'}.`); }
+            catch (e) { admMsg(e.message, true); }
+        }
+        async function admDuplicate(id) {
+            const t = admGet(id); if (!t) return;
+            const copy = { id: 'c' + Date.now().toString(36), builtin: false, title: t.title + ' (salin)', desc: t.desc, duration: t.duration,
+                order: Math.max(...adm.tryouts.map(x => x.order === 999 ? 0 : x.order)) + 1, requires: [], active: false,
+                questions: JSON.parse(JSON.stringify(t.questions)) };
+            try { await adminCall('saveTryout', { tryout: copy }); await adminReload(); admMsg(`Salinan dibuat (status: disembunyikan). Edit soalnya di tab Soal, lalu aktifkan.`); }
+            catch (e) { admMsg(e.message, true); }
+        }
+        async function admDeleteTryout(id) {
+            if (!admConfirm('del:' + id)) return;
+            const t = admGet(id);
+            try { await adminCall('deleteTryout', { id }); await adminReload(); admMsg(t && t.builtin ? 'Pengaturan tryout bawaan dikembalikan ke default.' : 'Tryout dihapus (nilai peserta tetap tersimpan di sheet).'); }
+            catch (e) { admMsg(e.message, true); }
+        }
+
+        // ------------------------------- TAB SOAL -------------------------------
+        function validateQuestion(q) {
+            if (!q || !['TWK', 'TIU', 'TKP'].includes(q.category)) return 'Kategori harus TWK, TIU, atau TKP.';
+            if (!String(q.question || '').trim() || String(q.question).trim().length < 5) return 'Teks soal terlalu pendek.';
+            if (!Array.isArray(q.options) || q.options.length !== 5) return 'Harus ada tepat 5 opsi jawaban (A–E).';
+            if (q.options.some(o => !o || !String(o.text || '').trim())) return 'Semua opsi harus terisi.';
+            const sc = q.options.map(o => Number(o.score));
+            if (sc.some(x => !isFinite(x))) return 'Skor opsi tidak valid.';
+            if (q.category === 'TKP') { if (sc.some(x => x < 1 || x > 5 || !Number.isInteger(x))) return 'Skor TKP harus bilangan bulat 1–5.'; }
+            else if (sc.filter(x => x === 5).length !== 1 || sc.filter(x => x === 0).length !== 4) return 'Soal TWK/TIU harus punya tepat 1 kunci (skor 5) dan 4 opsi lain skor 0.';
+            return '';
+        }
+        function admSelectedQ() { return admGet(adm.qTid); }
+        function admEnsureQ() {
+            if (!adm.qTid || !admGet(adm.qTid)) {
+                const t = adm.tryouts.find(x => !x.builtin) || adm.tryouts[0];
+                adm.qTid = t ? t.id : null; adm.qDraft = t ? JSON.parse(JSON.stringify(t.questions)) : []; adm.qDirty = false; adm.qForm = null;
+            }
+        }
+        function admSelectQ(id) {
+            if (adm.qDirty && adm.armed !== 'sw') { adm.armed = 'sw'; adm.msg = 'Ada perubahan soal yang belum disimpan. Pilih tryout lagi untuk membuangnya, atau klik "Simpan ke Server" dulu.'; adm.msgErr = true; renderAdmin(); return; }
+            adm.armed = null; adm.msg = '';
+            const t = admGet(id); adm.qTid = id; adm.qDraft = t ? JSON.parse(JSON.stringify(t.questions)) : []; adm.qDirty = false; adm.qForm = null;
+            renderAdmin();
+        }
+        function admSoalHtml() {
+            admEnsureQ();
+            if (!adm.qTid) return '<p class="text-sm text-slate-500">Belum ada tryout.</p>';
+            const t = admSelectedQ(); const ro = t.builtin;
+            const c = { TWK: 0, TIU: 0, TKP: 0 }; adm.qDraft.forEach(q => c[q.category]++);
+            const missing = ['TWK', 'TIU', 'TKP'].filter(k => !c[k]);
+            const rows = adm.qDraft.map((q, i) => {
+                const key = q.category === 'TKP' ? '—' : 'ABCDE'[q.options.findIndex(o => Number(o.score) === 5)] || '?';
+                const badge = { TWK: 'bg-red-100 text-red-800', TIU: 'bg-blue-100 text-blue-800', TKP: 'bg-purple-100 text-purple-800' }[q.category];
+                return `<tr class="border-b border-slate-100 align-top"><td class="py-2 pr-2 font-bold text-slate-500">${i + 1}</td>
+                    <td class="pr-2">${chip(q.category, badge)}</td><td class="pr-2 text-xs text-slate-500">${esc(q.subtopic)}</td>
+                    <td class="pr-2">${esc(String(q.question).slice(0, 110))}${String(q.question).length > 110 ? '…' : ''}</td>
+                    <td class="pr-2 font-bold">${key}</td>
+                    <td class="text-right whitespace-nowrap">${ro ? '' : `<button class="${BTN}" onclick="admEditQ(${i})">Edit</button> <button class="${BTN_DANGER}" onclick="admDeleteQ(${i})">${adm.armed === 'q:' + i ? 'Yakin?' : 'Hapus'}</button>`}</td></tr>`;
+            }).join('');
+            return `<div class="flex flex-wrap justify-between items-end gap-3 mb-4">
+                    <div><h3 class="text-lg font-extrabold text-slate-900">Editor Soal</h3>
+                    <p class="text-xs text-slate-500">TWK/TIU: tandai 1 kunci (skor 5). TKP: beri skor 1–5 pada tiap opsi.</p></div>
+                    <select class="${INPUT} sm:w-72" onchange="admSelectQ(this.value)">${adm.tryouts.map(x => `<option value="${esc(x.id)}" ${x.id === adm.qTid ? 'selected' : ''}>${esc(x.title)} (${x.builtin ? 'bawaan' : 'kustom'})</option>`).join('')}</select></div>
+                <div class="flex flex-wrap items-center gap-2 mb-3 text-xs">
+                    ${chip('Total ' + adm.qDraft.length + ' soal', 'bg-slate-800 text-white')} ${chip('TWK ' + c.TWK, 'bg-red-100 text-red-800')} ${chip('TIU ' + c.TIU, 'bg-blue-100 text-blue-800')} ${chip('TKP ' + c.TKP, 'bg-purple-100 text-purple-800')}
+                    ${adm.qDirty ? chip('Belum disimpan', 'bg-amber-100 text-amber-800') : ''}
+                </div>
+                ${missing.length && !ro ? `<p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">Subtes ${missing.join(', ')} belum punya soal. Skor subtes yang kosong dihitung 0 dan peserta otomatis tidak memenuhi ambang batas — sebaiknya isi ketiganya.</p>` : ''}
+                ${ro ? `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3 text-sm text-slate-700 flex flex-wrap items-center justify-between gap-2"><span>Soal tryout bawaan bersifat baca-saja.</span><button class="${BTN_PRIMARY}" onclick="admDuplicate('${t.id}')">Duplikat agar bisa diedit</button></div>`
+                : `<div class="flex flex-wrap gap-2 mb-4">
+                    <button class="${BTN_PRIMARY}" onclick="admNewQ()">+ Tambah Soal</button>
+                    <button class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white ${adm.qDirty ? '' : 'opacity-60'}" onclick="admSaveQuestions()">Simpan ke Server</button>
+                    <button class="${BTN}" onclick="admExportQ()">Ekspor JSON</button></div>`}
+                ${adm.qForm ? admQFormHtml() : ''}
+                <div class="overflow-x-auto"><table class="w-full text-xs sm:text-sm text-left">
+                    <thead class="text-slate-600 border-b border-slate-200"><tr><th class="py-2 pr-2">No</th><th class="pr-2">Subtes</th><th class="pr-2">Topik</th><th class="pr-2">Soal</th><th class="pr-2">Kunci</th><th></th></tr></thead>
+                    <tbody>${rows || '<tr><td colspan="6" class="py-6 text-center text-slate-500">Belum ada soal.</td></tr>'}</tbody></table></div>
+                ${ro ? '' : `<details class="mt-5 border border-slate-200 rounded-xl p-4">
+                    <summary class="cursor-pointer text-sm font-bold text-slate-800">Impor banyak soal sekaligus (JSON)</summary>
+                    <p class="text-[11px] text-slate-500 my-2">Format: array objek <code class="bg-slate-100 px-1 rounded">{"category":"TWK|TIU|TKP","subtopic":"...","question":"...","options":[{"text":"...","score":0}, ... 5 opsi],"explanation":"..."}</code>. TWK/TIU: satu opsi skor 5, sisanya 0. TKP: skor 1–5.</p>
+                    <textarea id="qj-text" rows="6" class="${INPUT} font-mono text-xs" placeholder='[ { "category": "TWK", ... } ]'></textarea>
+                    <div class="flex gap-2 mt-2"><button class="${BTN}" onclick="admImportQ(false)">Tambahkan ke daftar</button><button class="${BTN_DANGER}" onclick="admImportQ(true)">Ganti semua soal</button></div></details>`}`;
+        }
+        function admQFormHtml() {
+            const f = adm.qForm, q = f.q, isTkp = q.category === 'TKP';
+            const optRows = [0, 1, 2, 3, 4].map(i => `<div class="flex items-center gap-2">
+                <span class="w-6 text-center font-bold text-slate-500">${'ABCDE'[i]}</span>
+                <input id="qf-opt${i}" class="${INPUT}" value="${esc(q.options[i].text)}" placeholder="Teks opsi ${'ABCDE'[i]}">
+                <label class="qf-key text-xs whitespace-nowrap flex items-center gap-1 ${isTkp ? 'hidden' : ''}"><input type="radio" name="qf-key" value="${i}" ${Number(q.options[i].score) === 5 ? 'checked' : ''}> Kunci</label>
+                <input id="qf-score${i}" type="number" min="1" max="5" class="qf-score w-16 px-2 py-2 rounded-xl border border-slate-300 text-sm ${isTkp ? '' : 'hidden'}" value="${esc(q.options[i].score)}" title="Skor 1–5">
+            </div>`).join('');
+            return `<div class="border border-blue-200 bg-blue-50/50 rounded-2xl p-4 mb-5 space-y-3">
+                <h4 class="font-bold text-slate-900">${f.idx < 0 ? 'Soal Baru' : 'Edit Soal No. ' + (f.idx + 1)}</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div><label class="text-xs font-semibold text-slate-600">Subtes</label><select id="qf-cat" class="${INPUT}" onchange="qfToggle()">${['TWK', 'TIU', 'TKP'].map(c => `<option ${q.category === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+                    <div class="sm:col-span-2"><label class="text-xs font-semibold text-slate-600">Topik / sub-bagian</label><input id="qf-sub" class="${INPUT}" maxlength="60" value="${esc(q.subtopic)}" placeholder="mis. Nasionalisme, Deret Angka, Pelayanan Publik"></div>
+                </div>
+                <div><label class="text-xs font-semibold text-slate-600">Teks soal</label><textarea id="qf-text" rows="3" class="${INPUT}">${esc(q.question)}</textarea></div>
+                <div class="space-y-2">${optRows}</div>
+                <div><label class="text-xs font-semibold text-slate-600">Pembahasan</label><textarea id="qf-exp" rows="2" class="${INPUT}">${esc(q.explanation)}</textarea></div>
+                <p id="qf-error" class="hidden text-xs text-red-600"></p>
+                <div class="flex gap-2"><button class="${BTN_PRIMARY}" onclick="admSaveQ()">Simpan Soal</button><button class="${BTN}" onclick="admCancelQ()">Batal</button></div></div>`;
+        }
+        function qfToggle() {
+            const el = $('qf-cat'); if (!el) return;
+            const tkp = el.value === 'TKP';
+            document.querySelectorAll('.qf-key').forEach(e => e.classList.toggle('hidden', tkp));
+            document.querySelectorAll('.qf-score').forEach(e => e.classList.toggle('hidden', !tkp));
+        }
+        function admNewQ() {
+            adm.qForm = { idx: -1, q: { category: 'TWK', subtopic: '', question: '', explanation: '', options: [0, 1, 2, 3, 4].map(i => ({ text: '', score: 5 - i })) } };
+            adm.msg = ''; renderAdmin();
+        }
+        function admEditQ(i) { adm.qForm = { idx: i, q: JSON.parse(JSON.stringify(adm.qDraft[i])) }; adm.msg = ''; renderAdmin(); }
+        function admCancelQ() { adm.qForm = null; renderAdmin(); }
+        function admSaveQ() {
+            const cat = $('qf-cat').value;
+            const key = Number((document.querySelector('input[name="qf-key"]:checked') || {}).value);
+            const q = { category: cat, subtopic: $('qf-sub').value.trim() || cat, question: $('qf-text').value.trim(), explanation: $('qf-exp').value.trim(),
+                options: [0, 1, 2, 3, 4].map(i => ({ text: $('qf-opt' + i).value.trim(),
+                    score: cat === 'TKP' ? Number($('qf-score' + i).value) : (i === key ? 5 : 0) })) };
+            if (cat !== 'TKP' && !isFinite(key)) { showQfError('Pilih satu opsi sebagai kunci jawaban.'); return; }
+            const err = validateQuestion(q);
+            if (err) { showQfError(err); return; }
+            if (adm.qForm.idx < 0) adm.qDraft.push(q); else adm.qDraft[adm.qForm.idx] = q;
+            adm.qDirty = true; adm.qForm = null; adm.msg = ''; renderAdmin();
+        }
+        function showQfError(m) { const e = $('qf-error'); e.textContent = m; e.classList.remove('hidden'); }
+        function admDeleteQ(i) {
+            if (!admConfirm('q:' + i)) return;
+            adm.qDraft.splice(i, 1); adm.qDirty = true; adm.armed = null; renderAdmin();
+        }
+        function admImportQ(replace) {
+            if (replace && !admConfirm('import-replace')) return;
+            let arr;
+            try { arr = JSON.parse($('qj-text').value); if (arr && !Array.isArray(arr) && Array.isArray(arr.questions)) arr = arr.questions; if (!Array.isArray(arr)) throw new Error('bukan array'); }
+            catch (e) { admMsg('JSON tidak valid: ' + e.message, true); return; }
+            for (let i = 0; i < arr.length; i++) { const err = validateQuestion(arr[i]); if (err) { admMsg(`Soal ke-${i + 1} bermasalah: ${err}`, true); return; } }
+            const clean = arr.map(q => ({ category: q.category, subtopic: String(q.subtopic || q.category), question: String(q.question).trim(),
+                options: q.options.map(o => ({ text: String(o.text).trim(), score: Number(o.score) })), explanation: String(q.explanation || '') }));
+            adm.qDraft = replace ? clean : adm.qDraft.concat(clean);
+            adm.qDirty = true; adm.armed = null; admMsg(`${clean.length} soal ${replace ? 'menggantikan daftar' : 'ditambahkan'}. Klik "Simpan ke Server" untuk menyimpan.`);
+        }
+        function admExportQ() { const t = admSelectedQ(); downloadFile('soal-' + (t ? t.id : 'tryout') + '.json', 'application/json', JSON.stringify(adm.qDraft, null, 2)); }
+        async function admSaveQuestions() {
+            const t = admSelectedQ(); if (!t || t.builtin) return;
+            const clean = adm.qDraft.map((q, i) => Object.assign({}, q, { id: i + 1 }));
+            try { await adminCall('saveTryout', { tryout: Object.assign(metaOf(t), { questions: clean }) }); adm.qDirty = false; const id = adm.qTid; await adminReload(); adm.qTid = id; adm.qDraft = clean; admMsg(`${clean.length} soal tersimpan ke server.`); }
+            catch (e) { admMsg(e.message, true); }
+        }
+
+        // ------------------------------- TAB NILAI -------------------------------
+        function admFilteredResults() {
+            const q = adm.resQuery.toLowerCase().trim();
+            return (adm.results || []).filter(r => (!adm.resTid || r.tryoutId === adm.resTid) && (!q || (r.name + ' ' + r.regId).toLowerCase().includes(q)))
+                .sort((a, b) => b.finishedAt - a.finishedAt);
+        }
+        function admResRowsHtml() {
+            const rows = admFilteredResults();
+            if (!rows.length) return '<tr><td colspan="11" class="py-6 text-center text-slate-500">Tidak ada data.</td></tr>';
+            return rows.map((r, i) => `<tr class="border-b border-slate-100">
+                <td class="py-2 pr-2 text-slate-500">${i + 1}</td><td class="pr-2">${esc(tryoutTitleOfAny(r.tryoutId))}</td>
+                <td class="pr-2 font-semibold text-slate-900">${esc(r.name)}</td><td class="pr-2 font-mono text-xs">${esc(r.regId)}</td>
+                <td class="pr-2 whitespace-nowrap text-slate-600">${esc(r.finishedAt ? fmtDate(r.finishedAt) : '-')}</td>
+                <td class="pr-2 ${r.twk >= 65 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.twk)}</td><td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tiu)}</td><td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tkp)}</td>
+                <td class="pr-2 font-bold">${esc(r.total550)}</td><td class="pr-2 font-bold text-blue-700">${esc(r.total450)}</td>
+                <td class="text-right"><button class="${BTN_DANGER}" onclick="admDeleteResult('${esc(r.id)}')">${adm.armed === 'r:' + r.id ? 'Yakin?' : 'Hapus'}</button></td></tr>`).join('');
+        }
+        function tryoutTitleOfAny(id) { return admGet(id) ? admGet(id).title : id; }
+        function admNilaiHtml() {
+            const n = admFilteredResults().length;
+            return `<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                    <div><h3 class="text-lg font-extrabold text-slate-900">Nilai Peserta</h3><p class="text-xs text-slate-500" id="adm-res-count">${n} data (semua percobaan)</p></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="${BTN}" onclick="admRefreshResults()">Muat Ulang</button>
+                        <button class="${BTN}" onclick="admExportResults()">Ekspor CSV</button>
+                        <button class="${BTN_DANGER}" onclick="admClearResults()">${adm.armed === 'clear' ? 'Klik lagi untuk konfirmasi' : 'Hapus ' + (adm.resTid ? 'nilai tryout ini' : 'SEMUA nilai')}</button></div></div>
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <select class="${INPUT} sm:w-60" onchange="adm.resTid=this.value;renderAdmin()"><option value="">Semua tryout</option>${adm.tryouts.map(t => `<option value="${esc(t.id)}" ${adm.resTid === t.id ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}</select>
+                    <input class="${INPUT} flex-1 min-w-[180px]" placeholder="Cari nama / nomor peserta..." value="${esc(adm.resQuery)}" oninput="adm.resQuery=this.value;$('adm-res-body').innerHTML=admResRowsHtml();$('adm-res-count').textContent=admFilteredResults().length+' data (semua percobaan)'"></div>
+                <div class="overflow-x-auto max-h-[60vh] overflow-y-auto"><table class="w-full text-xs sm:text-sm text-left">
+                    <thead class="text-slate-600 border-b border-slate-200 sticky top-0 bg-white"><tr><th class="py-2 pr-2">#</th><th class="pr-2">Tryout</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th></th></tr></thead>
+                    <tbody id="adm-res-body">${admResRowsHtml()}</tbody></table></div>`;
+        }
+        async function admRefreshResults() { adm.results = null; await loadAdminResults(); renderAdmin(); }
+        async function admDeleteResult(id) {
+            if (!admConfirm('r:' + id)) return;
+            try { await adminCall('deleteResult', { id }); adm.results = adm.results.filter(r => r.id !== id); admMsg('Data nilai dihapus.'); }
+            catch (e) { admMsg(e.message, true); }
+        }
+        async function admClearResults() {
+            if (!admConfirm('clear')) return;
+            try { const d = await adminCall('clearResults', { tryoutId: adm.resTid }); adm.results = null; await loadAdminResults(); admMsg(`${d.deleted || 0} data nilai dihapus.`); }
+            catch (e) { admMsg(e.message, true); }
+        }
+        function admExportResults() {
+            const rows = admFilteredResults();
+            const head = ['Tryout', 'Nama', 'No Peserta', 'Selesai', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Nilai (450)', 'Status', 'Terjawab'];
+            const body = rows.map(r => [tryoutTitleOfAny(r.tryoutId), r.name, r.regId, r.finishedAt ? fmtDate(r.finishedAt) : '', r.twk, r.tiu, r.tkp, r.total550, r.total450, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
+            downloadFile('nilai-peserta-cat-skd.csv', 'text/csv;charset=utf-8', '\uFEFF' + [head, ...body].map(r => r.map(csvCell).join(',')).join('\r\n'));
+        }
+
+        // ------------------------------- TAB STATISTIK -------------------------------
+        function admStatHtml() {
+            const all = adm.results || [];
+            const ids = [...new Set(adm.tryouts.map(t => t.id).concat(all.map(r => r.tryoutId)))];
+            const uniq = new Set(all.map(r => (r.name || '').toLowerCase() + '|' + r.regId)).size;
+            const cards = ids.map(id => {
+                const rs = all.filter(r => r.tryoutId === id);
+                if (!rs.length) return `<tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-semibold">${esc(tryoutTitleOfAny(id))}</td><td colspan="6" class="text-slate-500">Belum ada data</td></tr>`;
+                const best = bestPerParticipant(rs);
+                const avg = Math.round(best.reduce((s, r) => s + r.total450, 0) / best.length);
+                const max = Math.max(...best.map(r => r.total450));
+                const pass = Math.round(best.filter(r => r.pass).length / best.length * 100);
+                const avgSub = k => Math.round(best.reduce((s, r) => s + r[k], 0) / best.length);
+                return `<tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-semibold">${esc(tryoutTitleOfAny(id))}</td>
+                    <td class="pr-3">${best.length}</td><td class="pr-3">${rs.length}</td>
+                    <td class="pr-3 min-w-[140px]"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-2 bg-blue-600" style="width:${Math.min(100, avg / 450 * 100)}%"></div></div><span class="font-bold text-blue-700">${avg}</span></div></td>
+                    <td class="pr-3 font-bold">${max}</td>
+                    <td class="pr-3 text-xs">TWK ${avgSub('twk')} • TIU ${avgSub('tiu')} • TKP ${avgSub('tkp')}</td>
+                    <td class="pr-3"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-2 bg-emerald-500" style="width:${pass}%"></div></div><span class="font-bold">${pass}%</span></div></td></tr>`;
+            }).join('');
+            return `<div class="flex flex-wrap justify-between items-center gap-2 mb-4"><div><h3 class="text-lg font-extrabold text-slate-900">Statistik</h3>
+                <p class="text-xs text-slate-500">Dihitung dari nilai terbaik tiap peserta pada setiap tryout.</p></div><button class="${BTN}" onclick="admRefreshResults()">Muat Ulang</button></div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><div class="text-[11px] uppercase font-bold text-slate-500">Peserta unik</div><div class="text-2xl font-black text-slate-900">${uniq}</div></div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><div class="text-[11px] uppercase font-bold text-slate-500">Total percobaan</div><div class="text-2xl font-black text-slate-900">${all.length}</div></div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><div class="text-[11px] uppercase font-bold text-slate-500">Tryout aktif</div><div class="text-2xl font-black text-slate-900">${adm.tryouts.filter(t => t.active).length}</div></div></div>
+                <div class="overflow-x-auto"><table class="w-full text-xs sm:text-sm text-left">
+                    <thead class="text-slate-600 border-b border-slate-200"><tr><th class="py-2 pr-3">Tryout</th><th class="pr-3">Peserta</th><th class="pr-3">Percobaan</th><th class="pr-3">Rata-rata (450)</th><th class="pr-3">Tertinggi</th><th class="pr-3">Rata-rata subtes (550)</th><th class="pr-3">Lulus PG</th></tr></thead>
+                    <tbody>${cards}</tbody></table></div>`;
+        }
+
+        // ------------------------------- TAB PENGATURAN -------------------------------
+        function admSettingsHtml() {
+            const s = adm.settings;
+            return `<h3 class="text-lg font-extrabold text-slate-900 mb-4">Pengaturan</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <div class="border border-slate-200 rounded-2xl p-4 space-y-3">
+                        <h4 class="font-bold text-slate-900">Leaderboard</h4>
+                        <label class="flex items-center gap-2 text-sm"><input id="st-public" type="checkbox" ${s.leaderboardPublic ? 'checked' : ''}> Tampilkan leaderboard kepada peserta</label>
+                        <div><label class="text-xs font-semibold text-slate-600">Jumlah peringkat yang ditampilkan</label><input id="st-topn" type="number" min="5" max="500" class="${INPUT} sm:w-40" value="${esc(s.topN)}"></div>
+                        <button class="${BTN_PRIMARY}" onclick="admSaveSettings()">Simpan Pengaturan</button>
+                    </div>
+                    <div class="border border-slate-200 rounded-2xl p-4 space-y-3">
+                        <h4 class="font-bold text-slate-900">Koneksi Server</h4>
+                        <p class="text-[11px] text-slate-500 break-all font-mono">${esc(SERVER_URL)}</p>
+                        <button class="${BTN}" onclick="admPing()">Tes Koneksi</button>
+                        <p id="ping-result" class="text-xs text-slate-600"></p>
+                    </div>
+                    <div class="border border-slate-200 rounded-2xl p-4 space-y-3 lg:col-span-2">
+                        <h4 class="font-bold text-slate-900">Ganti Password Admin</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input id="pw-old" type="password" autocomplete="current-password" class="${INPUT}" placeholder="Password lama">
+                            <input id="pw-new" type="password" autocomplete="new-password" class="${INPUT}" placeholder="Password baru (min. 6 karakter)"></div>
+                        <button class="${BTN}" onclick="admChangePw()">Ubah Password</button>
+                    </div>
+                </div>`;
+        }
+        async function admSaveSettings() {
+            try { const d = await adminCall('saveSettings', { leaderboardPublic: $('st-public').checked, topN: Number($('st-topn').value) || 50 }); adm.settings = d.settings; admMsg('Pengaturan tersimpan.'); }
+            catch (e) { admMsg(e.message, true); }
+        }
+        async function admPing() {
+            const out = $('ping-result'); out.textContent = 'Menguji...'; const t0 = Date.now();
+            try { const d = await apiGet('ping'); out.textContent = d && d.ok ? `✓ Terhubung (${Date.now() - t0} ms)` : '✗ Respons tidak sesuai'; }
+            catch (e) { out.textContent = '✗ ' + e.message; }
+        }
+        async function admChangePw() {
+            try { await adminCall('changePassword', { oldPwd: $('pw-old').value, newPwd: $('pw-new').value }); admMsg('Password admin diganti.'); }
+            catch (e) { admMsg(e.message, true); }
         }
 
     </script>
