@@ -2979,7 +2979,7 @@
             const myId = currentRecordId();
             const rows = lastBoard.map((r, i) => `<tr class="${r.me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.twk)}</td><td>${esc(r.tiu)}</td><td>${esc(r.tkp)}</td><td>${esc(r.total550)}</td><td>${esc(r.total450)}</td><td>${r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG'}</td></tr>`).join('');
             return `
-                <h1>Hasil ${esc(currentTryout ? currentTryout.title : 'Simulasi')} — TRY OUT CPNS BY FRA</h1>
+                <h1>Hasil ${esc(currentTryout ? currentTryout.title : 'Simulasi')} — TRY OUT CPNS </h1>
                 <div>${esc(g('res-participant-name'))} &bull; No. Peserta: ${esc(g('res-participant-id'))} &bull; ${esc(fmtDate(Date.now()))}</div>
                 <div style="margin-top:4px"><strong>${esc(g('overall-status-badge'))}</strong></div>
                 <h2>Rekap Nilai</h2>
