@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRY OUT CPNS BY FRA</title>
+    <title>TRYOUT CPNS BY FRA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -61,7 +61,7 @@
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30 no-print">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 px-3 py-1.5 rounded-lg font-extrabold text-xs sm:text-lg tracking-wider shadow-sm leading-tight">TRY OUT CPNS</div>
+                <div class="bg-blue-600 px-3 py-1.5 rounded-lg font-extrabold text-xs sm:text-lg tracking-wider shadow-sm leading-tight">TRYOUT CPNS</div>
                 <div>
                     <h1 class="font-bold text-sm sm:text-lg leading-tight">Simulasi SKD CPNS Nasional</h1>
                     <p id="header-sub" class="text-xs text-slate-400">Tryout SKD • TWK • TIU • TKP</p>
@@ -2979,7 +2979,7 @@
             const myId = currentRecordId();
             const rows = lastBoard.map((r, i) => `<tr class="${r.me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.twk)}</td><td>${esc(r.tiu)}</td><td>${esc(r.tkp)}</td><td>${esc(r.total550)}</td><td>${esc(r.total450)}</td><td>${r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG'}</td></tr>`).join('');
             return `
-                <h1>Hasil ${esc(currentTryout ? currentTryout.title : 'Simulasi')} — TRY OUT CPNS </h1>
+                <h1>Hasil ${esc(currentTryout ? currentTryout.title : 'Simulasi')} — TRYOUT CPNS </h1>
                 <div>${esc(g('res-participant-name'))} &bull; No. Peserta: ${esc(g('res-participant-id'))} &bull; ${esc(fmtDate(Date.now()))}</div>
                 <div style="margin-top:4px"><strong>${esc(g('overall-status-badge'))}</strong></div>
                 <h2>Rekap Nilai</h2>
@@ -3009,7 +3009,7 @@
 
         function downloadReport() {
             const css = 'body{font-family:Arial,sans-serif;font-size:13px;color:#0f172a;margin:24px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:20px 0 6px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:5px 7px;text-align:left}th{background:#e2e8f0}.me{font-weight:700;background:#fef3c7}@page{size:A4;margin:14mm}';
-            const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Hasil TRY OUT CPNS BY FRA</title><style>${css}</style></head><body>${buildReportHtml()}</body></html>`;
+            const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Hasil TRYOUT CPNS BY FRA</title><style>${css}</style></head><body>${buildReportHtml()}</body></html>`;
             downloadFile('hasil-cat-skd-' + (state.participantName || 'peserta').replace(/[^\w-]+/g, '_') + '.html', 'text/html;charset=utf-8', html);
         }
 
