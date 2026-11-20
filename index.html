@@ -2907,7 +2907,7 @@
                     if (d && d.hidden) return { rows: [], source: 'Leaderboard sedang disembunyikan oleh admin.' };
                     if (d && (d.ok || Array.isArray(d.rows))) {
                         const total = d.total != null ? d.total : (d.rows || []).length;
-                        return { rows: d.rows || [], source: `Server Google Sheets • ${total} peserta` + (d.attempts ? ` • ${d.attempts} percobaan` : '') };
+                        return { rows: d.rows || [], source: `Nilai Tersimpan Diserver • ${total} peserta` + (d.attempts ? ` • ${d.attempts} percobaan` : '') };
                     }
                     throw new Error((d && d.error) || 'respons tidak dikenal');
                 } catch (e) { err = e.message; console.warn('Gagal memuat papan nilai server:', e); }
