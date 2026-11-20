@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRYOUT CPNS BY FRA</title>
+    <title>TRY OUT CPNS BY FRA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -61,7 +61,7 @@
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30 no-print">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 px-3 py-1.5 rounded-lg font-extrabold text-xs sm:text-lg tracking-wider shadow-sm leading-tight">TRYOUT CPNS</div>
+                <div class="bg-blue-600 px-3 py-1.5 rounded-lg font-extrabold text-xs sm:text-lg tracking-wider shadow-sm leading-tight">GAS CPNS</div>
                 <div>
                     <h1 class="font-bold text-sm sm:text-lg leading-tight">Simulasi SKD CPNS Nasional</h1>
                     <p id="header-sub" class="text-xs text-slate-400">Tryout SKD • TWK • TIU • TKP</p>
@@ -71,6 +71,7 @@
             <!-- Info Peserta & Timer -->
             <div class="flex items-center space-x-3 sm:space-x-4">
                 <button id="btn-home" type="button" onclick="goHome()" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700">Beranda</button>
+                <button id="btn-logout" type="button" onclick="logoutParticipant()" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-700 hover:bg-red-600 border border-red-800">Logout</button>
                 <button id="btn-admin" type="button" onclick="openAdminLogin()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700">🔐 Admin</button>
                 <div id="header-participant" class="hidden md:flex flex-col text-right border-r border-slate-700 pr-4">
                     <span id="header-name" class="text-xs font-bold text-white truncate max-w-[180px]">Peserta</span>
@@ -99,9 +100,9 @@
         <!-- 1. Layar Masuk Peserta -->
         <div id="start-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 mt-2">
             <div class="text-center mb-6">
-                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-2 tracking-wide uppercase">Simulasi Computer Assisted Test (CAT)</span>
+                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-2 tracking-wide uppercase">Computer Assisted Test (CAT)</span>
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Seleksi Kompetensi Dasar (SKD)</h2>
-                <p class="text-slate-600 mt-1.5 text-sm">Masukkan identitas peserta untuk membuka beranda tryout dan papan nilai.</p>
+                <p class="text-slate-600 mt-1.5 text-sm">Masukkan nama dan Nomor Peserta dari admin untuk membuka beranda tryout.</p>
             </div>
 
             <form id="participant-form" onsubmit="handleStartSubmit(event)" class="space-y-4 mb-6">
@@ -112,23 +113,27 @@
                     <p id="name-error" class="hidden text-xs text-red-600 mt-1">Nama lengkap peserta wajib diisi terlebih dahulu.</p>
                 </div>
                 <div>
-                    <label for="input-reg" class="block text-sm font-semibold text-slate-700 mb-1">Nomor Ujian / Peserta <span class="text-slate-400 font-normal">(Opsional - otomatis jika kosong)</span></label>
-                    <input type="text" id="input-reg" maxlength="40" placeholder="Contoh: 2630041120001845"
+                    <label for="input-reg" class="block text-sm font-semibold text-slate-700 mb-1">Nomor Peserta <span class="text-red-500">*</span></label>
+                    <input type="text" id="input-reg" required maxlength="40" placeholder="Nomor peserta dari admin"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-sm font-mono transition">
-                    <p class="text-[11px] text-slate-500 mt-1">Gunakan nama dan nomor yang sama bila ingin melanjutkan progres tryout di perangkat lain.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Nomor peserta diberikan oleh admin. Satu nomor hanya untuk satu nama. Identitas tersimpan di perangkat ini.</p>
+                    <p id="reg-error" class="hidden text-xs text-red-600 mt-1"></p>
+                    <p id="saved-note" class="hidden text-xs text-emerald-700 mt-1">Identitas tersimpan di perangkat ini. Tekan tombol di bawah untuk masuk kembali.</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2 text-xs sm:text-sm">
-                    <div class="flex justify-between border-b border-slate-200 pb-2">
-                        <span class="text-slate-600">Ambang Batas (Passing Grade):</span>
-                        <span class="font-bold text-slate-900">TWK: 65 | TIU: 80 | TKP: 166</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-600">Konversi Nilai Akhir:</span>
-                        <span class="font-bold text-blue-700">Skala 450 (skor asli 550)</span>
-                    </div>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs">
+                    <table class="w-full text-left">
+                        <thead class="text-slate-600 border-b border-slate-200"><tr><th class="py-1.5 pr-2">Sub-tes</th><th class="pr-2">Jumlah Soal</th><th class="pr-2">Nilai Maks</th><th>Ambang Batas</th></tr></thead>
+                        <tbody class="text-slate-800">
+                            <tr><td class="py-1 pr-2">TWK (Wawasan Kebangsaan)</td><td>30 soal</td><td>150</td><td class="font-bold">65</td></tr>
+                            <tr><td class="py-1 pr-2">TIU (Inteligensi Umum)</td><td>35 soal</td><td>175</td><td class="font-bold">80</td></tr>
+                            <tr><td class="py-1 pr-2">TKP (Karakteristik Pribadi)</td><td>45 soal</td><td>225</td><td class="font-bold">166</td></tr>
+                            <tr class="border-t border-slate-200 font-bold"><td class="py-1 pr-2">Total</td><td>110 soal</td><td>550</td><td>&mdash;</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="text-[10px] text-slate-500 mt-2">Sumber: Keputusan MenPAN-RB No. 321 Tahun 2024 tentang SKD CPNS (formasi umum). Hasil akhir memakai skala 550.</p>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition duration-150 flex items-center justify-center space-x-2 text-base">
-                    <span>Masuk ke Beranda Tryout</span>
+                <button type="submit" id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition duration-150 flex items-center justify-center space-x-2 text-base">
+                    <span id="start-btn-label">Masuk ke Beranda Tryout</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </form>
@@ -148,7 +153,7 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <button type="button" onclick="openHistory()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Riwayat (<span id="hist-count-home">0</span>)</button>
-                    <button type="button" onclick="logoutParticipant()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Ganti Peserta</button>
+                    <button type="button" onclick="logoutParticipant()" class="px-4 py-2 rounded-xl border border-red-300 text-red-700 font-semibold text-sm hover:bg-red-50">Logout</button>
                 </div>
             </div>
 
@@ -174,7 +179,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs sm:text-sm text-left">
                         <thead class="text-slate-600 border-b border-slate-200">
-                            <tr><th class="py-2 pr-2">Peringkat</th><th class="pr-2">Nama</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th>Status</th></tr>
+                            <tr><th class="py-2 pr-2">Peringkat</th><th class="pr-2">Nama</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th>Status</th></tr>
                         </thead>
                         <tbody id="hlb-body"></tbody>
                     </table>
@@ -313,34 +318,15 @@
                     </div>
                 </div>
 
-                <!-- Dual Score Display: Skala 450 & Skor Asli BKN 550 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <!-- Nilai Akhir Skala 450 -->
-                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-md flex flex-col justify-between">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-widest text-amber-400">Nilai Akhir (Konversi Skala 450)</span>
-                            <div class="mt-2 flex items-baseline space-x-2">
-                                <span id="total-score-450" class="text-5xl font-black text-white">0</span>
-                                <span class="text-lg text-slate-400 font-semibold">/ 450</span>
-                            </div>
+                <!-- Hasil akhir tunggal (skala 550, standar BKN) -->
+                <div class="grid grid-cols-1 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-md">
+                        <span class="text-xs font-bold uppercase tracking-widest text-amber-400">Nilai Akhir SKD (Skala 550)</span>
+                        <div class="mt-2 flex items-baseline space-x-2">
+                            <span id="total-score-550" class="text-5xl font-black text-white">0</span>
+                            <span class="text-lg text-slate-400 font-semibold">/ 550</span>
                         </div>
-                        <p class="text-xs text-slate-300 mt-3 pt-3 border-t border-slate-700/80">
-                            Rumus Konversi: <span class="font-mono text-amber-300">(Skor Asli ÷ 550) × 450</span>
-                        </p>
-                    </div>
-
-                    <!-- Skor Asli BKN (Maksimal 550) -->
-                    <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col justify-between">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Total Skor Kumulatif Asli BKN</span>
-                            <div class="mt-2 flex items-baseline space-x-2">
-                                <span id="total-score-550" class="text-5xl font-black text-slate-900">0</span>
-                                <span class="text-lg text-slate-500 font-semibold">/ 550</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-600 mt-3 pt-3 border-t border-slate-200">
-                            Akumulasi TWK (Maks 150) + TIU (Maks 175) + TKP (Maks 225)
-                        </p>
+                        <p class="text-xs text-slate-300 mt-3 pt-3 border-t border-slate-700/80">TWK (maks 150) + TIU (maks 175) + TKP (maks 225). Ambang batas: TWK 65, TIU 80, TKP 166. Sumber: Kepmen PANRB No. 321 Tahun 2024.</p>
                     </div>
                 </div>
 
@@ -357,7 +343,6 @@
                             <div>
                                 <span id="twk-score" class="text-3xl font-extrabold text-slate-900">0</span>
                                 <span class="text-xs text-slate-500 font-medium">/ 150</span>
-                                <span id="twk-450" class="block text-[11px] text-blue-600 font-semibold mt-0.5">Skala 450: 0 / 122.7</span>
                             </div>
                             <span class="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">PG BKN: <strong>65</strong></span>
                         </div>
@@ -374,7 +359,6 @@
                             <div>
                                 <span id="tiu-score" class="text-3xl font-extrabold text-slate-900">0</span>
                                 <span class="text-xs text-slate-500 font-medium">/ 175</span>
-                                <span id="tiu-450" class="block text-[11px] text-blue-600 font-semibold mt-0.5">Skala 450: 0 / 143.2</span>
                             </div>
                             <span class="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">PG BKN: <strong>80</strong></span>
                         </div>
@@ -391,7 +375,6 @@
                             <div>
                                 <span id="tkp-score" class="text-3xl font-extrabold text-slate-900">0</span>
                                 <span class="text-xs text-slate-500 font-medium">/ 225</span>
-                                <span id="tkp-450" class="block text-[11px] text-blue-600 font-semibold mt-0.5">Skala 450: 0 / 184.1</span>
                             </div>
                             <span class="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">PG BKN: <strong>166</strong></span>
                         </div>
@@ -431,7 +414,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs sm:text-sm text-left">
                         <thead class="text-slate-600 border-b border-slate-200">
-                            <tr><th class="py-2 pr-2">Peringkat</th><th class="pr-2">Nama</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th>Status</th></tr>
+                            <tr><th class="py-2 pr-2">Peringkat</th><th class="pr-2">Nama</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th>Status</th></tr>
                         </thead>
                         <tbody id="lb-body"></tbody>
                     </table>
@@ -495,7 +478,7 @@
         <div class="overflow-auto flex-1 p-4">
           <table class="w-full text-xs sm:text-sm text-left">
             <thead class="text-slate-600 border-b border-slate-200">
-              <tr><th class="py-2 pr-2">#</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">Tryout</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th class="pr-2">Status</th><th></th></tr>
+              <tr><th class="py-2 pr-2">#</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">Tryout</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Status</th><th></th></tr>
             </thead>
             <tbody id="hist-body"></tbody>
           </table>
@@ -509,7 +492,7 @@
     <div id="admin-login-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 items-center justify-center p-4">
         <form onsubmit="adminLoginSubmit(event)" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
             <h3 class="text-lg font-extrabold text-slate-900 mb-1">Masuk Mode Admin</h3>
-            <p class="text-xs text-slate-500 mb-4">Password diverifikasi oleh server </p>
+            <p class="text-xs text-slate-500 mb-4">Password diverifikasi oleh server Google Apps Script.</p>
             <input id="admin-pwd" type="password" autocomplete="current-password" required placeholder="Password admin"
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 outline-none text-sm mb-2">
             <p id="admin-login-error" class="hidden text-xs text-red-600 mb-2"></p>
@@ -1963,13 +1946,16 @@
         window.addEventListener('DOMContentLoaded', () => {
             try { applyConfig(JSON.parse(localStorage.getItem(CONFIG_CACHE_KEY)) || {}); } catch (e) { applyConfig({}); }
             profile = loadProfile();
-            if (profile) { showHome(); } else { showOnly('start-screen'); syncConfig(); }
+            if (profile && profile.verified && isLoggedIn()) { showHome(); } else { profile = null; showOnly('start-screen'); prefillStart(); syncConfig(); }
         });
 
         // =========================================================================
         // PROFIL PESERTA, DAFTAR TRYOUT & SESI (localStorage per tryout)
         // =========================================================================
         const PROFILE_KEY = "cat_cpns_profile_v1";
+        const LOGIN_KEY = "cat_cpns_loggedin_v1";
+        function isLoggedIn() { try { return localStorage.getItem(LOGIN_KEY) === "1"; } catch (e) { return false; } }
+        function setLoggedIn(v) { try { if (v) localStorage.setItem(LOGIN_KEY, "1"); else localStorage.removeItem(LOGIN_KEY); } catch (e) {} }
         const CONFIG_CACHE_KEY = "cat_cpns_config_cache_v1";
         let profile = null;
         let tryouts = [];
@@ -2075,6 +2061,7 @@
             const showP = !!profile && id !== 'start-screen' && id !== 'admin-screen';
             headerParticipant.style.display = showP ? '' : 'none'; // kelas 'hidden md:flex' tetap menyembunyikannya di layar kecil
             $('btn-admin').classList.toggle('hidden', inQuiz);
+            $('btn-logout').classList.toggle('hidden', !(showP && !inQuiz));
             $('btn-home').classList.toggle('hidden', id !== 'result-screen');
             window.scrollTo(0, 0);
         }
@@ -2087,23 +2074,57 @@
         function generateParticipantId() {
             return "26" + Math.floor(100000000000 + Math.random() * 900000000000);
         }
-        function handleStartSubmit(e) {
+        // Identitas (nama + nomor peserta) tersimpan permanen di perangkat; logout hanya menutup sesi.
+        function prefillStart() {
+            const p = loadProfile();
+            const nm = $('input-name'), rg = $('input-reg');
+            if (p && p.verified) {
+                nm.value = p.name; rg.value = p.regId;
+                nm.readOnly = true; rg.readOnly = true;
+                nm.classList.add('bg-slate-100'); rg.classList.add('bg-slate-100');
+                $('saved-note').classList.remove('hidden');
+                $('start-btn-label').textContent = 'Masuk sebagai ' + p.name;
+            } else {
+                nm.readOnly = false; rg.readOnly = false;
+                nm.classList.remove('bg-slate-100'); rg.classList.remove('bg-slate-100');
+                $('saved-note').classList.add('hidden');
+                $('start-btn-label').textContent = 'Masuk ke Beranda Tryout';
+            }
+        }
+        async function handleStartSubmit(e) {
             e.preventDefault();
             const nameInput = $('input-name').value.trim();
-            const regInput = $('input-reg').value.trim();
+            const regInput = $('input-reg').value.replace(/\s/g, '');
+            const rerr = $('reg-error'); rerr.classList.add('hidden');
             if (!nameInput) { $('name-error').classList.remove('hidden'); return; }
             $('name-error').classList.add('hidden');
-            profile = { name: nameInput, regId: regInput || generateParticipantId() };
+            if (!regInput) { rerr.textContent = 'Nomor peserta wajib diisi.'; rerr.classList.remove('hidden'); return; }
+            const btn = $('start-btn'); btn.disabled = true; $('start-btn-label').textContent = 'Memeriksa nomor...';
+            const saved = loadProfile();
+            let ok = false, msg = '', finalName = nameInput;
+            try {
+                const d = await apiGet('verifyReg', { name: nameInput, regId: regInput });
+                if (d && d.ok && d.valid) { ok = true; finalName = d.name || nameInput; }
+                else msg = (d && d.error) || 'Nomor peserta tidak valid.';
+            } catch (err) {
+                if (saved && saved.verified && saved.name.toLowerCase() === nameInput.toLowerCase() && String(saved.regId) === regInput) { ok = true; finalName = saved.name; }
+                else msg = 'Tidak dapat menghubungi server untuk memeriksa nomor. Periksa koneksi internet.';
+            }
+            btn.disabled = false;
+            if (!ok) { rerr.textContent = msg; rerr.classList.remove('hidden'); prefillStart(); return; }
+            profile = { name: finalName, regId: regInput, verified: true };
             try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (err) {}
+            setLoggedIn(true);
             doneMap = {};
             showHome();
         }
         function logoutParticipant() {
+            if (!confirm('Keluar dari akun? Nama, nomor peserta, progres, dan nilai Anda tetap tersimpan di perangkat ini.')) return;
             clearInterval(timerInterval);
-            try { localStorage.removeItem(PROFILE_KEY); } catch (e) {}
+            setLoggedIn(false);
             profile = null; doneMap = {};
-            $('input-name').value = ""; $('input-reg').value = "";
             showOnly('start-screen');
+            prefillStart();
         }
         function goHome() { clearInterval(timerInterval); showHome(); }
 
@@ -2138,7 +2159,7 @@
                 else if (inProg) status = chip('Sedang dikerjakan', 'bg-blue-100 text-blue-800');
                 else if (done) status = chip('✓ Selesai', 'bg-emerald-100 text-emerald-800');
                 let info = `${t.questions.length} soal • ${t.duration} menit<br><span class="text-slate-500">TWK ${st.TWK} • TIU ${st.TIU} • TKP ${st.TKP}</span>`;
-                if (best) info += `<br><span class="font-semibold text-blue-700">Nilai terbaik: ${esc(best.total450)}/450</span>`;
+                if (best) info += `<br><span class="font-semibold text-blue-700">Nilai terbaik: ${esc(best.total550)}/550</span>`;
                 if (inProg) info += `<br><span class="text-slate-500">Terjawab ${sess.userAnswers.filter(a => a !== null).length}/${t.questions.length} • sisa ${Math.floor(sess.timeLeft / 60)} menit</span>`;
                 let btns = '';
                 if (empty) btns = `<button disabled class="w-full py-2.5 rounded-xl bg-slate-200 text-slate-500 font-semibold text-sm cursor-not-allowed">Belum ada soal</button>`;
@@ -2432,10 +2453,7 @@
 
             const sc = scoreAnswers(questions, state.userAnswers);
             const twkScore = sc.twk, tiuScore = sc.tiu, tkpScore = sc.tkp;
-            const totalBkn550 = sc.total550, totalScale450 = sc.total450;
-            const twkScale450 = ((twkScore / 550) * 450).toFixed(1);
-            const tiuScale450 = ((tiuScore / 550) * 450).toFixed(1);
-            const tkpScale450 = ((tkpScore / 550) * 450).toFixed(1);
+            const totalBkn550 = sc.total550;
 
             const stt = tryoutStats({ questions });
             document.getElementById('twk-title').textContent = `TWK (${stt.TWK} Soal)`;
@@ -2449,16 +2467,11 @@
                 nn.classList.remove('hidden');
             } else nn.classList.add('hidden');
 
-            document.getElementById('total-score-450').textContent = totalScale450;
-            document.getElementById('total-score-550').textContent = totalBkn550;
+                        document.getElementById('total-score-550').textContent = totalBkn550;
 
             document.getElementById('twk-score').textContent = twkScore;
             document.getElementById('tiu-score').textContent = tiuScore;
             document.getElementById('tkp-score').textContent = tkpScore;
-
-            document.getElementById('twk-450').textContent = `Skala 450: ${twkScale450} / 122.7`;
-            document.getElementById('tiu-450').textContent = `Skala 450: ${tiuScale450} / 143.2`;
-            document.getElementById('tkp-450').textContent = `Skala 450: ${tkpScale450} / 184.1`;
 
             // Cek Passing Grade Standar BKN: TWK >= 65, TIU >= 80, TKP >= 166
             const passTwk = twkScore >= 65;
@@ -2689,7 +2702,7 @@
         // RIWAYAT NILAI PERANGKAT (localStorage) + PENGIRIMAN KE SERVER
         // =========================================================================
         // ==== ISI DENGAN URL APLIKASI WEB GOOGLE APPS SCRIPT (berakhiran /exec) ====
-        const SERVER_URL = "https://script.google.com/macros/s/AKfycbxPysJKTvfl3IklnYP-s0T7JR8assGVG1GXjRTx_nl1RuS_ZiN5FvKW3G-ZEbUb_m2h/exec";
+        const SERVER_URL = "https://script.google.com/macros/s/AKfycbxz3S7C-KEFE4r2x2LltwHjfw0t7AP05EUpv3xwZ8ZE8grWrMYkOaSe8b_dEoUlXLVu/exec";
         const OUTBOX_KEY = "cat_cpns_skd_outbox_v1";
         const RESULTS_KEY = "cat_cpns_skd_results_v1";
         function loadResults() { try { const a = JSON.parse(localStorage.getItem(RESULTS_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
@@ -2769,7 +2782,7 @@
                     <td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.tiu)}</td>
                     <td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'} font-semibold">${esc(r.tkp)}</td>
                     <td class="pr-2 font-bold">${esc(r.total550)}</td>
-                    <td class="pr-2 font-bold text-blue-700">${esc(r.total450)}</td>
+                    
                     <td class="pr-2"><span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${r.pass ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.pass ? 'MEMENUHI PG' : 'TIDAK MEMENUHI PG'}</span></td>
                     <td></td>`;
                 const btn = document.createElement('button');
@@ -2790,7 +2803,7 @@
             const passed = all.filter(r => r.pass).length;
             document.getElementById('hist-summary').textContent =
                 `${all.length} peserta tercatat • ${passed} memenuhi ambang batas` +
-                (all.length ? ` • Nilai tertinggi: ${all[0].total450}/450` : '');
+                (all.length ? ` • Nilai tertinggi: ${all[0].total550}/550` : '');
         }
 
         let clearArmed = false;
@@ -2907,7 +2920,7 @@
                     if (d && d.hidden) return { rows: [], source: 'Leaderboard sedang disembunyikan oleh admin.' };
                     if (d && (d.ok || Array.isArray(d.rows))) {
                         const total = d.total != null ? d.total : (d.rows || []).length;
-                        return { rows: d.rows || [], source: `Nilai Tersimpan Diserver • ${total} peserta` + (d.attempts ? ` • ${d.attempts} percobaan` : '') };
+                        return { rows: d.rows || [], source: `Terimakasih Sudah Menggunakan website ini • ${total} peserta` + (d.attempts ? ` • ${d.attempts} percobaan` : '') };
                     }
                     throw new Error((d && d.error) || 'respons tidak dikenal');
                 } catch (e) { err = e.message; console.warn('Gagal memuat papan nilai server:', e); }
@@ -2932,7 +2945,7 @@
                     <td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tiu)}</td>
                     <td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tkp)}</td>
                     <td class="pr-2">${esc(r.total550)}</td>
-                    <td class="pr-2 text-blue-700">${esc(r.total450)}</td>
+                    
                     <td><span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${r.pass ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.pass ? 'MEMENUHI PG' : 'TIDAK MEMENUHI PG'}</span></td>`;
                 body.appendChild(tr);
             });
@@ -2977,9 +2990,9 @@
         function buildReportHtml() {
             const g = id => document.getElementById(id).textContent;
             const myId = currentRecordId();
-            const rows = lastBoard.map((r, i) => `<tr class="${r.me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.twk)}</td><td>${esc(r.tiu)}</td><td>${esc(r.tkp)}</td><td>${esc(r.total550)}</td><td>${esc(r.total450)}</td><td>${r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG'}</td></tr>`).join('');
+            const rows = lastBoard.map((r, i) => `<tr class="${r.me ? 'me' : ''}"><td>${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.twk)}</td><td>${esc(r.tiu)}</td><td>${esc(r.tkp)}</td><td>${esc(r.total550)}</td><td>${r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG'}</td></tr>`).join('');
             return `
-                <h1>Hasil ${esc(currentTryout ? currentTryout.title : 'Simulasi')} — TRYOUT CPNS </h1>
+                <h1>Hasil ${esc(currentTryout ? currentTryout.title : 'Simulasi')} — TRY OUT CPNS BY FRA</h1>
                 <div>${esc(g('res-participant-name'))} &bull; No. Peserta: ${esc(g('res-participant-id'))} &bull; ${esc(fmtDate(Date.now()))}</div>
                 <div style="margin-top:4px"><strong>${esc(g('overall-status-badge'))}</strong></div>
                 <h2>Rekap Nilai</h2>
@@ -2988,13 +3001,13 @@
                     <tr><td>TWK</td><td>${esc(g('twk-score'))}</td><td>150</td><td>65</td><td>${esc(g('twk-status'))}</td></tr>
                     <tr><td>TIU</td><td>${esc(g('tiu-score'))}</td><td>175</td><td>80</td><td>${esc(g('tiu-status'))}</td></tr>
                     <tr><td>TKP</td><td>${esc(g('tkp-score'))}</td><td>225</td><td>166</td><td>${esc(g('tkp-status'))}</td></tr>
-                    <tr><th>Total</th><th>${esc(g('total-score-550'))}</th><th>550</th><th></th><th>Skala 450: ${esc(g('total-score-450'))}</th></tr>
+                    <tr><th>Total</th><th>${esc(g('total-score-550'))}</th><th>550</th><th></th><th></th></tr>
                 </table>
                 <h2>Papan Nilai</h2>
                 <div style="font-size:11px;margin-bottom:4px">${esc(lastBoardSource)}</div>
                 <table>
-                    <tr><th>#</th><th>Nama</th><th>TWK</th><th>TIU</th><th>TKP</th><th>Total (550)</th><th>Nilai (450)</th><th>Status</th></tr>
-                    ${rows || '<tr><td colspan="8">Belum ada data.</td></tr>'}
+                    <tr><th>#</th><th>Nama</th><th>TWK</th><th>TIU</th><th>TKP</th><th>Total (550)</th><th>Status</th></tr>
+                    ${rows || '<tr><td colspan="7">Belum ada data.</td></tr>'}
                 </table>`;
         }
 
@@ -3009,7 +3022,7 @@
 
         function downloadReport() {
             const css = 'body{font-family:Arial,sans-serif;font-size:13px;color:#0f172a;margin:24px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:20px 0 6px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:5px 7px;text-align:left}th{background:#e2e8f0}.me{font-weight:700;background:#fef3c7}@page{size:A4;margin:14mm}';
-            const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Hasil TRYOUT CPNS BY FRA</title><style>${css}</style></head><body>${buildReportHtml()}</body></html>`;
+            const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Hasil TRY OUT CPNS BY FRA</title><style>${css}</style></head><body>${buildReportHtml()}</body></html>`;
             downloadFile('hasil-cat-skd-' + (state.participantName || 'peserta').replace(/[^\w-]+/g, '_') + '.html', 'text/html;charset=utf-8', html);
         }
 
@@ -3027,8 +3040,8 @@
         }
         function exportCSV() {
             const all = loadResults().sort((a, b) => (b.total550 - a.total550) || (b.finishedAt - a.finishedAt));
-            const head = ['Peringkat', 'Nama', 'No Peserta', 'Selesai', 'Tryout', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Nilai (450)', 'Status', 'Terjawab'];
-            const rows = all.map((r, i) => [i + 1, r.name, r.regId, fmtDate(r.finishedAt), tryoutTitleById(r.tryoutId || 't1'), r.twk, r.tiu, r.tkp, r.total550, r.total450, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
+            const head = ['Peringkat', 'Nama', 'No Peserta', 'Selesai', 'Tryout', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Status', 'Terjawab'];
+            const rows = all.map((r, i) => [i + 1, r.name, r.regId, fmtDate(r.finishedAt), tryoutTitleById(r.tryoutId || 't1'), r.twk, r.tiu, r.tkp, r.total550, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
             const csv = '\uFEFF' + [head, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
             downloadFile('riwayat-peserta-cat-skd.csv', 'text/csv;charset=utf-8', csv);
         }
@@ -3071,7 +3084,7 @@
         try { adminToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || ""; } catch (e) {}
         const adm = { tab: 'tryout', tryouts: [], settings: { leaderboardPublic: true, topN: 50 }, results: null, form: null,
             qTid: null, qDraft: [], qDirty: false, qForm: null, resTid: '', resQuery: '', msg: '', msgErr: false, armed: null };
-        const ADMIN_TABS = [['tryout', 'Tryout'], ['soal', 'Soal'], ['nilai', 'Nilai Peserta'], ['statistik', 'Statistik'], ['pengaturan', 'Pengaturan']];
+        const ADMIN_TABS = [['tryout', 'Tryout'], ['soal', 'Soal'], ['nilai', 'Nilai Peserta'], ['statistik', 'Statistik'], ['nomor', 'No. Peserta'], ['pengaturan', 'Pengaturan']];
         const BTN = 'px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50';
         const BTN_PRIMARY = 'px-4 py-2 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white';
         const BTN_DANGER = 'px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-200 text-red-600 hover:bg-red-50';
@@ -3130,6 +3143,7 @@
         async function adminTab(k) {
             adm.tab = k; adm.msg = ''; adm.armed = null; renderAdminTabs();
             if ((k === 'nilai' || k === 'statistik') && !adm.results) await loadAdminResults();
+            if (k === 'nomor') await loadRegs();
             renderAdmin();
         }
         async function loadAdminResults() {
@@ -3145,7 +3159,7 @@
         }
         function renderAdmin() {
             renderAdminTabs();
-            const fn = { tryout: admTryoutHtml, soal: admSoalHtml, nilai: admNilaiHtml, statistik: admStatHtml, pengaturan: admSettingsHtml }[adm.tab];
+            const fn = { tryout: admTryoutHtml, soal: admSoalHtml, nilai: admNilaiHtml, statistik: admStatHtml, nomor: admNomorHtml, pengaturan: admSettingsHtml }[adm.tab];
             const msg = adm.msg ? `<div class="mb-4 text-sm px-4 py-2.5 rounded-xl border ${adm.msgErr ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}">${esc(adm.msg)}</div>` : '';
             $('admin-content').innerHTML = msg + fn();
             if (adm.tab === 'soal') qfToggle();
@@ -3153,6 +3167,52 @@
         function admGet(id) { return adm.tryouts.find(t => t.id === id) || null; }
         function admTitle(id) { const t = admGet(id); return t ? t.title : id; }
         function metaOf(t) { return { id: t.id, builtin: !!t.builtin, title: t.title, desc: t.desc, duration: t.duration, order: t.order, requires: t.requires, active: t.active }; }
+
+        // ------------------------------- TAB NOMOR PESERTA -------------------------------
+        async function loadRegs() {
+            $('admin-content').innerHTML = '<p class="text-sm text-slate-500">Memuat nomor peserta...</p>';
+            try { adm.regs = (await adminCall('listReg')).rows || []; } catch (e) { adm.regs = adm.regs || []; adm.msg = e.message; adm.msgErr = true; }
+        }
+        async function admGenReg() {
+            const count = Number($('reg-count').value) || 1;
+            try {
+                const d = await adminCall('genReg', { count, prefix: $('reg-prefix').value.trim(), label: $('reg-label').value.trim() });
+                adm.lastCreated = d.created || [];
+                await loadRegs();
+                admMsg('Berhasil membuat ' + adm.lastCreated.length + ' nomor peserta.');
+            } catch (e) { admMsg(e.message, true); }
+        }
+        async function admDelReg(id) {
+            if (!admConfirm('delreg' + id)) return;
+            try { await adminCall('deleteReg', { regId: id }); await loadRegs(); admMsg('Nomor dihapus.'); } catch (e) { admMsg(e.message, true); }
+        }
+        function admCopyRegs(onlyNew) {
+            const list = (adm.regs || []).filter(r => !onlyNew || !r.boundName).map(r => r.regId).join('\n');
+            try { navigator.clipboard.writeText(list); admMsg('Disalin ' + list.split('\n').filter(Boolean).length + ' nomor.'); } catch (e) { admMsg('Gagal menyalin: ' + e.message, true); }
+        }
+        function admNomorHtml() {
+            const regs = adm.regs || [];
+            const used = regs.filter(r => r.boundName).length;
+            const inp = 'px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-blue-600';
+            const rows = regs.slice().reverse().map(r => `<tr class="border-b border-slate-100">
+                <td class="py-2 pr-3 font-mono font-bold text-slate-900">${esc(r.regId)}</td>
+                <td class="pr-3 text-slate-600">${esc(r.label)}</td>
+                <td class="pr-3">${r.boundName ? `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Dipakai: ${esc(r.boundName)}</span>` : '<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Belum dipakai</span>'}</td>
+                <td class="pr-3 text-xs text-slate-500">${r.createdAt ? fmtDate(r.createdAt) : ''}</td>
+                <td><button type="button" onclick="admDelReg('${esc(r.regId)}')" class="text-xs font-semibold px-2.5 py-1 rounded-lg ${adm.armed === 'delreg' + r.regId ? 'bg-red-600 text-white' : 'border border-red-300 text-red-700'}">${adm.armed === 'delreg' + r.regId ? 'Yakin?' : 'Hapus'}</button></td></tr>`).join('');
+            return `<h3 class="text-lg font-extrabold text-slate-900 mb-1">Generate Nomor Peserta</h3>
+                <p class="text-xs text-slate-500 mb-4">Berikan nomor ini secara manual ke peserta. Satu nomor otomatis terkunci ke satu nama pada pemakaian pertama.</p>
+                <div class="flex flex-wrap gap-2 items-end mb-4">
+                    <label class="text-xs font-semibold text-slate-600">Jumlah<br><input id="reg-count" type="number" min="1" max="200" value="10" class="${inp} w-24"></label>
+                    <label class="text-xs font-semibold text-slate-600">Awalan (opsional)<br><input id="reg-prefix" maxlength="6" placeholder="mis. TO" class="${inp} w-28"></label>
+                    <label class="text-xs font-semibold text-slate-600">Catatan (opsional)<br><input id="reg-label" maxlength="60" placeholder="mis. Batch 1" class="${inp} w-44"></label>
+                    <button type="button" onclick="admGenReg()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm">Generate</button>
+                    <button type="button" onclick="admCopyRegs(true)" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Salin yang belum dipakai</button>
+                </div>
+                <p class="text-xs text-slate-600 mb-2">Total ${regs.length} nomor • ${used} terpakai • ${regs.length - used} tersedia</p>
+                <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="text-slate-600 border-b border-slate-200"><tr><th class="py-2 pr-3">No. Peserta</th><th class="pr-3">Catatan</th><th class="pr-3">Status</th><th class="pr-3">Dibuat</th><th></th></tr></thead>
+                <tbody>${rows || '<tr><td colspan="5" class="py-4 text-slate-500">Belum ada nomor peserta.</td></tr>'}</tbody></table></div>`;
+        }
 
         // ------------------------------- TAB TRYOUT -------------------------------
         function admTryoutHtml() {
@@ -3396,7 +3456,7 @@
                 <td class="pr-2 font-semibold text-slate-900">${esc(r.name)}</td><td class="pr-2 font-mono text-xs">${esc(r.regId)}</td>
                 <td class="pr-2 whitespace-nowrap text-slate-600">${esc(r.finishedAt ? fmtDate(r.finishedAt) : '-')}</td>
                 <td class="pr-2 ${r.twk >= 65 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.twk)}</td><td class="pr-2 ${r.tiu >= 80 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tiu)}</td><td class="pr-2 ${r.tkp >= 166 ? 'text-emerald-700' : 'text-red-600'}">${esc(r.tkp)}</td>
-                <td class="pr-2 font-bold">${esc(r.total550)}</td><td class="pr-2 font-bold text-blue-700">${esc(r.total450)}</td>
+                <td class="pr-2 font-bold">${esc(r.total550)}</td>
                 <td class="text-right"><button class="${BTN_DANGER}" onclick="admDeleteResult('${esc(r.id)}')">${adm.armed === 'r:' + r.id ? 'Yakin?' : 'Hapus'}</button></td></tr>`).join('');
         }
         function tryoutTitleOfAny(id) { return admGet(id) ? admGet(id).title : id; }
@@ -3412,7 +3472,7 @@
                     <select class="${INPUT} sm:w-60" onchange="adm.resTid=this.value;renderAdmin()"><option value="">Semua tryout</option>${adm.tryouts.map(t => `<option value="${esc(t.id)}" ${adm.resTid === t.id ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}</select>
                     <input class="${INPUT} flex-1 min-w-[180px]" placeholder="Cari nama / nomor peserta..." value="${esc(adm.resQuery)}" oninput="adm.resQuery=this.value;$('adm-res-body').innerHTML=admResRowsHtml();$('adm-res-count').textContent=admFilteredResults().length+' data (semua percobaan)'"></div>
                 <div class="overflow-x-auto max-h-[60vh] overflow-y-auto"><table class="w-full text-xs sm:text-sm text-left">
-                    <thead class="text-slate-600 border-b border-slate-200 sticky top-0 bg-white"><tr><th class="py-2 pr-2">#</th><th class="pr-2">Tryout</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th class="pr-2">Nilai (450)</th><th></th></tr></thead>
+                    <thead class="text-slate-600 border-b border-slate-200 sticky top-0 bg-white"><tr><th class="py-2 pr-2">#</th><th class="pr-2">Tryout</th><th class="pr-2">Nama</th><th class="pr-2">No. Peserta</th><th class="pr-2">Selesai</th><th class="pr-2">TWK</th><th class="pr-2">TIU</th><th class="pr-2">TKP</th><th class="pr-2">Total (550)</th><th></th></tr></thead>
                     <tbody id="adm-res-body">${admResRowsHtml()}</tbody></table></div>`;
         }
         async function admRefreshResults() { adm.results = null; await loadAdminResults(); renderAdmin(); }
@@ -3428,8 +3488,8 @@
         }
         function admExportResults() {
             const rows = admFilteredResults();
-            const head = ['Tryout', 'Nama', 'No Peserta', 'Selesai', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Nilai (450)', 'Status', 'Terjawab'];
-            const body = rows.map(r => [tryoutTitleOfAny(r.tryoutId), r.name, r.regId, r.finishedAt ? fmtDate(r.finishedAt) : '', r.twk, r.tiu, r.tkp, r.total550, r.total450, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
+            const head = ['Tryout', 'Nama', 'No Peserta', 'Selesai', 'TWK', 'TIU', 'TKP', 'Total (550)', 'Status', 'Terjawab'];
+            const body = rows.map(r => [tryoutTitleOfAny(r.tryoutId), r.name, r.regId, r.finishedAt ? fmtDate(r.finishedAt) : '', r.twk, r.tiu, r.tkp, r.total550, r.pass ? 'Memenuhi PG' : 'Tidak Memenuhi PG', r.answered]);
             downloadFile('nilai-peserta-cat-skd.csv', 'text/csv;charset=utf-8', '\uFEFF' + [head, ...body].map(r => r.map(csvCell).join(',')).join('\r\n'));
         }
 
@@ -3442,13 +3502,13 @@
                 const rs = all.filter(r => r.tryoutId === id);
                 if (!rs.length) return `<tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-semibold">${esc(tryoutTitleOfAny(id))}</td><td colspan="6" class="text-slate-500">Belum ada data</td></tr>`;
                 const best = bestPerParticipant(rs);
-                const avg = Math.round(best.reduce((s, r) => s + r.total450, 0) / best.length);
-                const max = Math.max(...best.map(r => r.total450));
+                const avg = Math.round(best.reduce((s, r) => s + r.total550, 0) / best.length);
+                const max = Math.max(...best.map(r => r.total550));
                 const pass = Math.round(best.filter(r => r.pass).length / best.length * 100);
                 const avgSub = k => Math.round(best.reduce((s, r) => s + r[k], 0) / best.length);
                 return `<tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-semibold">${esc(tryoutTitleOfAny(id))}</td>
                     <td class="pr-3">${best.length}</td><td class="pr-3">${rs.length}</td>
-                    <td class="pr-3 min-w-[140px]"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-2 bg-blue-600" style="width:${Math.min(100, avg / 450 * 100)}%"></div></div><span class="font-bold text-blue-700">${avg}</span></div></td>
+                    <td class="pr-3 min-w-[140px]"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-2 bg-blue-600" style="width:${Math.min(100, avg / 550 * 100)}%"></div></div><span class="font-bold text-blue-700">${avg}</span></div></td>
                     <td class="pr-3 font-bold">${max}</td>
                     <td class="pr-3 text-xs">TWK ${avgSub('twk')} • TIU ${avgSub('tiu')} • TKP ${avgSub('tkp')}</td>
                     <td class="pr-3"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-2 bg-emerald-500" style="width:${pass}%"></div></div><span class="font-bold">${pass}%</span></div></td></tr>`;
@@ -3460,7 +3520,7 @@
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><div class="text-[11px] uppercase font-bold text-slate-500">Total percobaan</div><div class="text-2xl font-black text-slate-900">${all.length}</div></div>
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><div class="text-[11px] uppercase font-bold text-slate-500">Tryout aktif</div><div class="text-2xl font-black text-slate-900">${adm.tryouts.filter(t => t.active).length}</div></div></div>
                 <div class="overflow-x-auto"><table class="w-full text-xs sm:text-sm text-left">
-                    <thead class="text-slate-600 border-b border-slate-200"><tr><th class="py-2 pr-3">Tryout</th><th class="pr-3">Peserta</th><th class="pr-3">Percobaan</th><th class="pr-3">Rata-rata (450)</th><th class="pr-3">Tertinggi</th><th class="pr-3">Rata-rata subtes (550)</th><th class="pr-3">Lulus PG</th></tr></thead>
+                    <thead class="text-slate-600 border-b border-slate-200"><tr><th class="py-2 pr-3">Tryout</th><th class="pr-3">Peserta</th><th class="pr-3">Percobaan</th><th class="pr-3">Rata-rata nilai (550)</th><th class="pr-3">Tertinggi</th><th class="pr-3">Rata-rata subtes (550)</th><th class="pr-3">Lulus PG</th></tr></thead>
                     <tbody>${cards}</tbody></table></div>`;
         }
 
